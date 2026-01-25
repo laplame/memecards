@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{DESCRIPTION}}">
+  <title>{{TITLE}}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23fce7f3;stop-opacity:1" /><stop offset="100%" style="stop-color:%23fdf2f8;stop-opacity:1" /></linearGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/></svg>') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #fce7f3;
+      min-height: 100vh;
+      position: relative;
+      padding: 20px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      z-index: 0;
+    }
+
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+      color: #333;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: translateX(-3px);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
+      padding: 60px 20px 40px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      border-radius: 0 0 30px 30px;
+      margin-bottom: -30px;
+    }
+
+    .heart-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 20px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .header h1 {
+      color: white;
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0;
+      transition: all 0.3s ease;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header h1.warning {
+      animation: pulse-warning 2s infinite;
+    }
+
+    .header h1.danger {
+      animation: pulse-danger 1.5s infinite;
+    }
+
+    @keyframes pulse-warning {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes pulse-danger {
+      0%, 100% {
+        transform: scale(1);
+        color: white;
+      }
+      50% {
+        transform: scale(1.1);
+        color: #ffeb3b;
+      }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .form-container {
+      background: white;
+      border-radius: 25px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      padding: 50px 30px 30px;
+      margin-top: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: #333;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: all 0.3s;
+      background: #f9fafb;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #ec4899;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .record-button {
+      width: 100%;
+      padding: 18px 24px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .record-button:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .record-button:active {
+      transform: translateY(0);
+    }
+
+    .record-button.recording {
+      background: #dc2626;
+      animation: pulse 1.5s infinite;
+    }
+
+    .record-button.stop {
+      background: #dc2626;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    .audio-preview {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      display: none;
+    }
+
+    .audio-preview.active {
+      display: block;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .audio-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .audio-info span {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+    }
+
+    .submit-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+    }
+
+    .submit-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-message {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .status-message.active {
+      display: block;
+    }
+
+    .status-message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-message.loading {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    /* Estado de Personalización */
+    .personalization-form {
+      display: none;
+    }
+
+    .personalization-form.active {
+      display: block;
+    }
+
+    /* Estado de Reproducción */
+    .player-view {
+      display: none;
+    }
+
+    .player-view.active {
+      display: block;
+    }
+
+    .player-container {
+      background: white;
+      border-radius: 25px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      padding: 40px 30px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .player-container h1 {
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .player-container .description {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+
+    .audio-player {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 30px 0;
+    }
+
+    .play-button {
+      background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      font-size: 32px;
+      cursor: pointer;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .play-button:hover:not(:disabled) {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .play-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .play-button.playing {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    audio {
+      width: 100%;
+      outline: none;
+      margin-top: 15px;
+    }
+
+    .limits-info {
+      margin-top: 15px;
+      padding: 12px;
+      background: #fff3cd;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+
+    .limits-info.expired {
+      background: #f8d7da;
+      color: #721c24;
+      border-left-color: #dc3545;
+    }
+
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e9ecef;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #495057;
+    }
+
+    /* Emoticones y GIFs */
+    .emoji-item {
+      padding: 8px;
+      text-align: center;
+      font-size: 24px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+      user-select: none;
+    }
+
+    .emoji-item:hover {
+      background: #e5e7eb;
+    }
+
+    .gif-item {
+      position: relative;
+      cursor: pointer;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .gif-item:hover {
+      border-color: #ef4444;
+      transform: scale(1.05);
+    }
+
+    .gif-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .gif-item.selected {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+
+    @media (max-width: 600px) {
+      .form-container,
+      .player-container {
+        padding: 40px 20px 25px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+      }
+
+      .play-button {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Botón Volver -->
+  <a href="javascript:history.back()" class="back-button">
+    ← Volver
+  </a>
+
+  <!-- Header con corazón -->
+  <div class="header" id="mainHeader">
+    <div class="heart-icon">❤️</div>
+    <h1 id="headerTitle">Crea tu Tarjeta</h1>
+  </div>
+
+  <div class="container">
+    <!-- Estado de Personalización -->
+    <div class="personalization-form" id="personalizationForm">
+      <div class="form-container">
+        <form id="personalizeForm">
+          <div class="form-group">
+            <label for="senderName">Tu nombre</label>
+            <input 
+              type="text" 
+              id="senderName" 
+              name="senderName" 
+              placeholder="¿Quién envía esta tarjeta?" 
+              value="{{SENDER_NAME}}"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="recipientName">Para</label>
+            <input 
+              type="text" 
+              id="recipientName" 
+              name="recipientName" 
+              placeholder="¿A quién va dirigida?" 
+              value="{{RECIPIENT_NAME}}"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="writtenMessage">Mensaje escrito</label>
+            <div style="position: relative;">
+              <textarea 
+                id="writtenMessage" 
+                name="writtenMessage" 
+                placeholder="Escribe tu mensaje de amor..." 
+                required
+                style="padding-right: 50px;"
+              >{{WRITTEN_MESSAGE}}</textarea>
+              <button 
+                type="button" 
+                id="emojiButton"
+                style="position: absolute; right: 10px; top: 10px; background: #f3f4f6; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 20px;"
+                title="Agregar emoticones"
+              >
+                😊
+              </button>
+            </div>
+            
+            <!-- Selector de emoticones -->
+            <div id="emojiPicker" style="display: none; margin-top: 10px; padding: 15px; background: #f9fafb; border-radius: 12px; border: 2px solid #e5e7eb;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-weight: 600; font-size: 14px;">Emoticones</span>
+                <button 
+                  type="button" 
+                  id="closeEmojiPicker"
+                  style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;"
+                >
+                  ✕
+                </button>
+              </div>
+              <div id="emojiGrid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; max-height: 200px; overflow-y: auto;">
+                <!-- Emoticones se cargarán aquí -->
+              </div>
+            </div>
+
+            <!-- Selector de GIFs -->
+            <div style="margin-top: 10px;">
+              <button 
+                type="button" 
+                id="gifButton"
+                style="width: 100%; padding: 12px; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #333;"
+              >
+                🎬 Buscar GIFs
+              </button>
+              
+              <div id="gifSearch" style="display: none; margin-top: 10px; padding: 15px; background: #f9fafb; border-radius: 12px; border: 2px solid #e5e7eb;">
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                  <input 
+                    type="text" 
+                    id="gifSearchInput" 
+                    placeholder="Buscar GIFs (amor, corazón, beso...)" 
+                    style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;"
+                  >
+                  <button 
+                    type="button" 
+                    id="gifSearchBtn"
+                    style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;"
+                  >
+                    Buscar
+                  </button>
+                </div>
+                <div id="gifResults" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 300px; overflow-y: auto;">
+                  <!-- GIFs se cargarán aquí -->
+                </div>
+                <div id="gifLoading" style="display: none; text-align: center; padding: 20px; color: #666;">
+                  Cargando GIFs...
+                </div>
+              </div>
+              
+              <div id="selectedGif" style="display: none; margin-top: 10px; padding: 10px; background: #f0fdf4; border-radius: 10px; border: 2px solid #10b981;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; font-weight: 600; color: #065f46;">GIF seleccionado</span>
+                  <button 
+                    type="button" 
+                    id="removeGif"
+                    style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+                <img id="selectedGifImg" style="width: 100%; max-width: 200px; border-radius: 8px; margin-top: 8px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="voiceMessage">Mensaje de voz</label>
+            <button 
+              type="button" 
+              class="record-button" 
+              id="recordButton"
+            >
+              🎤 Grabar Mensaje
+            </button>
+            
+            <div class="audio-preview" id="audioPreview">
+              <div class="audio-info">
+                <span id="audioStatus">Audio grabado</span>
+                <button 
+                  type="button" 
+                  id="deleteAudio" 
+                  style="background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;"
+                >
+                  Eliminar
+                </button>
+              </div>
+              <audio id="previewAudio" controls></audio>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-button" id="submitBtn">
+            Crear Tarjeta
+          </button>
+        </form>
+
+        <div class="status-message" id="statusMessage"></div>
+      </div>
+    </div>
+
+    <!-- Estado de Reproducción -->
+    <div class="player-view" id="playerView">
+      <div class="player-container">
+        <h1>{{TITLE}}</h1>
+        <p class="description">{{DESCRIPTION}}</p>
+        
+        <!-- GIF seleccionado (si existe) -->
+        {{#if SELECTED_GIF_URL}}
+        <div style="margin: 20px 0; text-align: center;">
+          <img src="{{SELECTED_GIF_URL}}" alt="GIF" style="max-width: 100%; max-height: 300px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        </div>
+        {{/if}}
+        
+        <div class="audio-player">
+          <button class="play-button" id="playButton" aria-label="Reproducir audio">
+            ▶
+          </button>
+          <audio id="audioPlayer" controls preload="metadata">
+            <source src="{{AUDIO_URL}}" type="audio/mpeg">
+            Tu navegador no soporta el elemento de audio.
+          </audio>
+          <div id="status" style="margin-top: 15px; color: #666; font-size: 14px;">Cargando audio...</div>
+        </div>
+
+        <div class="limits-info" id="limitsInfo"></div>
+
+        <div class="info">
+          <p>Comparte esta página para que otros puedan escuchar el audio</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Datos de la página
+    const PAGE_DATA = {
+      code: '{{CODE}}',
+      baseUrl: '{{BASE_URL}}',
+      isPersonalized: '{{IS_PERSONALIZED}}' === 'true',
+      playCount: parseInt('{{PLAY_COUNT}}') || 0,
+      maxPlays: parseInt('{{MAX_PLAYS}}') || 5,
+      expirationDate: '{{EXPIRATION_DATE}}' ? new Date('{{EXPIRATION_DATE}}') : null,
+      selectedGifUrl: '{{SELECTED_GIF_URL}}' || null,
+    };
+
+    const displayGif = document.getElementById('displayGif');
+    const displayGifImg = document.getElementById('displayGifImg');
+
+    const personalizationForm = document.getElementById('personalizationForm');
+    const playerView = document.getElementById('playerView');
+    const personalizeForm = document.getElementById('personalizeForm');
+    const recordButton = document.getElementById('recordButton');
+    const audioPreview = document.getElementById('audioPreview');
+    const previewAudio = document.getElementById('previewAudio');
+    const deleteAudioBtn = document.getElementById('deleteAudio');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const audio = document.getElementById('audioPlayer');
+    const playButton = document.getElementById('playButton');
+    const status = document.getElementById('status');
+    const limitsInfo = document.getElementById('limitsInfo');
+    const emojiButton = document.getElementById('emojiButton');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const emojiGrid = document.getElementById('emojiGrid');
+    const closeEmojiPicker = document.getElementById('closeEmojiPicker');
+    const gifButton = document.getElementById('gifButton');
+    const gifSearch = document.getElementById('gifSearch');
+    const gifSearchInput = document.getElementById('gifSearchInput');
+    const gifSearchBtn = document.getElementById('gifSearchBtn');
+    const gifResults = document.getElementById('gifResults');
+    const gifLoading = document.getElementById('gifLoading');
+    const selectedGif = document.getElementById('selectedGif');
+    const selectedGifImg = document.getElementById('selectedGifImg');
+    const removeGif = document.getElementById('removeGif');
+    const writtenMessage = document.getElementById('writtenMessage');
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioBlob = null;
+    let recordingStream = null;
+    let recordingStartTime = null;
+    let recordingTimer = null;
+    let selectedGifUrl = null;
+    let selectedGifId = null;
+
+    // Emoticones populares para San Valentín
+    const popularEmojis = [
+      '❤️', '💕', '💖', '💗', '💓', '💞', '💝', '💘',
+      '😍', '🥰', '😘', '😗', '😙', '😚', '😻', '💋',
+      '🌹', '🌷', '🌺', '🌸', '💐', '🌻', '🌼', '🌿',
+      '💑', '👫', '👩‍❤️‍👨', '👨‍❤️‍👨', '👩‍❤️‍👩', '💏', '💑', '👨‍👩‍👧‍👦',
+      '🎁', '🎀', '🎂', '🍰', '🍫', '🍬', '🍭', '🍩',
+      '✨', '⭐', '🌟', '💫', '💎', '🎈', '🎉', '🎊',
+      '😊', '😄', '😃', '😁', '😆', '😅', '🤣', '😂',
+      '🥳', '🤗', '🤩', '😇', '😊', '🙂', '😉', '😌'
+    ];
+
+    // Cargar emoticones
+    function loadEmojis() {
+      emojiGrid.innerHTML = '';
+      popularEmojis.forEach(emoji => {
+        const emojiItem = document.createElement('div');
+        emojiItem.className = 'emoji-item';
+        emojiItem.textContent = emoji;
+        emojiItem.addEventListener('click', () => {
+          insertEmoji(emoji);
+        });
+        emojiGrid.appendChild(emojiItem);
+      });
+    }
+
+    // Insertar emoticón en el textarea
+    function insertEmoji(emoji) {
+      const textarea = writtenMessage;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const newText = text.substring(0, start) + emoji + text.substring(end);
+      textarea.value = newText;
+      textarea.focus();
+      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+    }
+
+    // Toggle selector de emoticones
+    emojiButton.addEventListener('click', () => {
+      if (emojiPicker.style.display === 'none') {
+        emojiPicker.style.display = 'block';
+        loadEmojis();
+      } else {
+        emojiPicker.style.display = 'none';
+      }
+    });
+
+    closeEmojiPicker.addEventListener('click', () => {
+      emojiPicker.style.display = 'none';
+    });
+
+    // Toggle selector de GIFs
+    gifButton.addEventListener('click', () => {
+      if (gifSearch.style.display === 'none') {
+        gifSearch.style.display = 'block';
+        // Cargar GIFs populares de amor
+        searchGifs('love');
+      } else {
+        gifSearch.style.display = 'none';
+      }
+    });
+
+    // Buscar GIFs usando el backend (Giphy o Tenor)
+    async function searchGifs(query = 'love') {
+      gifLoading.style.display = 'block';
+      gifResults.innerHTML = '';
+
+      try {
+        // Usar nuestro endpoint del backend que maneja Giphy y Tenor
+        const limit = 12;
+        const url = `${PAGE_DATA.baseUrl}/api/gifs/search?q=${encodeURIComponent(query)}&limit=${limit}&provider=giphy`;
+
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+          gifResults.innerHTML = '';
+          data.data.forEach((gif) => {
+            const gifItem = document.createElement('div');
+            gifItem.className = 'gif-item';
+            gifItem.dataset.gifId = gif.id;
+            gifItem.dataset.gifUrl = gif.url;
+            
+            const img = document.createElement('img');
+            img.src = gif.previewUrl || gif.url; // Usar preview si está disponible
+            img.alt = gif.title || 'GIF';
+            img.loading = 'lazy';
+            img.style.width = '100%';
+            img.style.height = 'auto';
+            
+            gifItem.appendChild(img);
+            
+            gifItem.addEventListener('click', () => {
+              selectGif(gif.url, gif.id, gif.url);
+            });
+            
+            gifResults.appendChild(gifItem);
+          });
+        } else {
+          gifResults.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #666;">No se encontraron GIFs. Intenta con otra búsqueda.</div>';
+        }
+      } catch (error) {
+        console.error('Error buscando GIFs:', error);
+        gifResults.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #dc3545;">Error al cargar GIFs. Intenta de nuevo más tarde.</div>';
+      } finally {
+        gifLoading.style.display = 'none';
+      }
+    }
+
+    // Seleccionar GIF
+    function selectGif(gifUrl, gifId, fullUrl) {
+      selectedGifUrl = fullUrl;
+      selectedGifId = gifId;
+      selectedGifImg.src = gifUrl;
+      selectedGif.style.display = 'block';
+      gifSearch.style.display = 'none';
+      
+      // Remover selección anterior
+      document.querySelectorAll('.gif-item').forEach(item => {
+        item.classList.remove('selected');
+        if (item.dataset.gifId === gifId) {
+          item.classList.add('selected');
+        }
+      });
+    }
+
+    // Eliminar GIF seleccionado
+    removeGif.addEventListener('click', () => {
+      selectedGifUrl = null;
+      selectedGifId = null;
+      selectedGif.style.display = 'none';
+      document.querySelectorAll('.gif-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+    });
+
+    // Buscar GIFs al hacer clic en el botón
+    gifSearchBtn.addEventListener('click', () => {
+      const query = gifSearchInput.value.trim() || 'love';
+      searchGifs(query);
+    });
+
+    // Buscar GIFs al presionar Enter
+    gifSearchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = gifSearchInput.value.trim() || 'love';
+        searchGifs(query);
+      }
+    });
+
+    const headerTitle = document.getElementById('headerTitle');
+
+    // Función para actualizar el título del header con cuenta regresiva
+    function updateHeaderTitle() {
+      if (PAGE_DATA.isPersonalized) {
+        const remaining = PAGE_DATA.maxPlays - PAGE_DATA.playCount;
+        
+        // Remover clases de animación anteriores
+        headerTitle.classList.remove('warning', 'danger');
+        
+        if (isExpired()) {
+          headerTitle.textContent = '⏰ Tu tarjeta ha expirado';
+          headerTitle.classList.add('danger');
+        } else if (remaining <= 0) {
+          headerTitle.textContent = '🔒 Tu tarjeta se ha autodestruido';
+          headerTitle.classList.add('danger');
+        } else if (remaining === 1) {
+          headerTitle.textContent = '⚠️ Última reproducción disponible';
+          headerTitle.classList.add('danger');
+        } else if (remaining === 2) {
+          headerTitle.textContent = '⏳ Tu tarjeta se autodestruirá en 2 reproducciones o el 14/02/2026 12:00 AM';
+          headerTitle.classList.add('warning');
+        } else if (remaining === 3) {
+          headerTitle.textContent = '⏳ Tu tarjeta se autodestruirá en 3 reproducciones o el 14/02/2026 12:00 AM';
+          headerTitle.classList.add('warning');
+        } else {
+          headerTitle.textContent = `✨ Tu tarjeta se autodestruirá en ${remaining} reproducciones o el 14/02/2026 12:00 AM`;
+        }
+      } else {
+        headerTitle.textContent = 'Crea tu Tarjeta';
+      }
+    }
+
+    // Inicializar vista según estado
+    if (!PAGE_DATA.isPersonalized) {
+      personalizationForm.classList.add('active');
+    } else {
+      playerView.classList.add('active');
+      updateLimitsInfo();
+      updateHeaderTitle();
+      
+      // Mostrar GIF si existe
+      if (PAGE_DATA.selectedGifUrl) {
+        displayGifImg.src = PAGE_DATA.selectedGifUrl;
+        displayGif.style.display = 'block';
+      }
+    }
+
+    // Función para actualizar el tiempo de grabación
+    function updateRecordingTime() {
+      if (recordingStartTime && mediaRecorder && mediaRecorder.state === 'recording') {
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        recordButton.textContent = `⏹ Detener (${minutes}:${seconds.toString().padStart(2, '0')})`;
+      }
+    }
+
+    // Grabación de audio
+    recordButton.addEventListener('click', async () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        // Detener grabación
+        mediaRecorder.stop();
+        recordButton.textContent = '🎤 Grabar Mensaje';
+        recordButton.classList.remove('recording');
+        if (recordingTimer) {
+          clearInterval(recordingTimer);
+          recordingTimer = null;
+        }
+        recordingStartTime = null;
+      } else {
+        // Iniciar grabación
+        try {
+          // Verificar si hay un audio previo
+          if (audioBlob) {
+            if (!confirm('Ya tienes un audio grabado. ¿Deseas reemplazarlo?')) {
+              return;
+            }
+            // Limpiar audio previo
+            audioBlob = null;
+            audioChunks = [];
+            previewAudio.src = '';
+            audioPreview.classList.remove('active');
+          }
+
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            } 
+          });
+          
+          recordingStream = stream;
+          
+          // Detectar el mejor tipo MIME disponible
+          let mimeType = 'audio/webm';
+          const options = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/ogg;codecs=opus',
+            'audio/mp4',
+          ];
+          
+          for (const option of options) {
+            if (MediaRecorder.isTypeSupported(option)) {
+              mimeType = option;
+              break;
+            }
+          }
+
+          mediaRecorder = new MediaRecorder(stream, { mimeType });
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = () => {
+            if (audioChunks.length > 0) {
+              // Determinar el tipo MIME del blob
+              const blobType = mimeType.split(';')[0] || 'audio/webm';
+              audioBlob = new Blob(audioChunks, { type: blobType });
+              
+              // Verificar que el blob tenga contenido
+              if (audioBlob.size === 0) {
+                showStatus('Error: La grabación está vacía. Intenta de nuevo.', 'error');
+                return;
+              }
+
+              const audioUrl = URL.createObjectURL(audioBlob);
+              previewAudio.src = audioUrl;
+              audioPreview.classList.add('active');
+              
+              // Mostrar información del audio
+              const sizeMB = (audioBlob.size / (1024 * 1024)).toFixed(2);
+              document.getElementById('audioStatus').textContent = 
+                `Audio grabado (${sizeMB} MB) - ${blobType}`;
+              
+              showStatus('✅ Audio grabado exitosamente', 'success');
+            } else {
+              showStatus('Error: No se capturó ningún audio. Intenta de nuevo.', 'error');
+            }
+            
+            // Detener todos los tracks del stream
+            recordingStream.getTracks().forEach(track => {
+              track.stop();
+            });
+            recordingStream = null;
+          };
+
+          mediaRecorder.onerror = (event) => {
+            console.error('Error en MediaRecorder:', event);
+            showStatus('Error durante la grabación. Intenta de nuevo.', 'error');
+            if (recordingStream) {
+              recordingStream.getTracks().forEach(track => track.stop());
+              recordingStream = null;
+            }
+          };
+
+          // Iniciar grabación
+          recordingStartTime = Date.now();
+          mediaRecorder.start(1000); // Capturar datos cada segundo
+          recordButton.textContent = '⏹ Detener (0:00)';
+          recordButton.classList.add('recording');
+          
+          // Actualizar tiempo cada segundo
+          recordingTimer = setInterval(updateRecordingTime, 1000);
+          
+          showStatus('🎤 Grabando...', 'loading');
+        } catch (error) {
+          console.error('Error accessing microphone:', error);
+          let errorMsg = 'No se pudo acceder al micrófono.';
+          
+          if (error.name === 'NotAllowedError' || error.name === 'PermissionDismissedError') {
+            errorMsg = 'Permiso de micrófono denegado. Por favor, permite el acceso al micrófono en la configuración de tu navegador.';
+          } else if (error.name === 'NotFoundError') {
+            errorMsg = 'No se encontró ningún micrófono. Por favor, conecta un micrófono e intenta de nuevo.';
+          } else if (error.name === 'NotReadableError') {
+            errorMsg = 'El micrófono está siendo usado por otra aplicación. Por favor, cierra otras aplicaciones.';
+          } else if (error.name === 'OverconstrainedError') {
+            errorMsg = 'El micrófono no soporta las características requeridas.';
+          }
+          
+          showStatus(errorMsg, 'error');
+          
+          if (recordingStream) {
+            recordingStream.getTracks().forEach(track => track.stop());
+            recordingStream = null;
+          }
+        }
+      }
+    });
+
+    // Eliminar audio grabado
+    deleteAudioBtn.addEventListener('click', () => {
+      if (confirm('¿Estás seguro de eliminar el audio grabado?')) {
+        // Limpiar blob y URL
+        if (previewAudio.src) {
+          URL.revokeObjectURL(previewAudio.src);
+        }
+        audioBlob = null;
+        audioChunks = [];
+        previewAudio.src = '';
+        audioPreview.classList.remove('active');
+        
+        // Detener grabación si está activa
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          recordButton.textContent = '🎤 Grabar Mensaje';
+          recordButton.classList.remove('recording');
+          if (recordingTimer) {
+            clearInterval(recordingTimer);
+            recordingTimer = null;
+          }
+        }
+        
+        // Detener stream si está activo
+        if (recordingStream) {
+          recordingStream.getTracks().forEach(track => track.stop());
+          recordingStream = null;
+        }
+        
+        showStatus('Audio eliminado', 'success');
+        setTimeout(() => {
+          statusMessage.classList.remove('active');
+        }, 2000);
+      }
+    });
+
+    // Manejar envío del formulario
+    personalizeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Validar campos
+      const senderName = document.getElementById('senderName').value.trim();
+      const recipientName = document.getElementById('recipientName').value.trim();
+      const writtenMessage = document.getElementById('writtenMessage').value.trim();
+
+      if (!senderName) {
+        showStatus('Por favor, ingresa tu nombre', 'error');
+        document.getElementById('senderName').focus();
+        return;
+      }
+
+      if (!recipientName) {
+        showStatus('Por favor, ingresa el nombre del destinatario', 'error');
+        document.getElementById('recipientName').focus();
+        return;
+      }
+
+      if (!writtenMessage) {
+        showStatus('Por favor, escribe un mensaje', 'error');
+        document.getElementById('writtenMessage').focus();
+        return;
+      }
+
+      if (!audioBlob) {
+        showStatus('Por favor, graba un mensaje de voz', 'error');
+        recordButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Verificar tamaño del archivo (máximo 50MB)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (audioBlob.size > maxSize) {
+        showStatus(`El audio es demasiado grande (${(audioBlob.size / (1024 * 1024)).toFixed(2)} MB). Máximo: 50 MB`, 'error');
+        return;
+      }
+
+      // Detener cualquier grabación activa
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        if (recordingTimer) {
+          clearInterval(recordingTimer);
+          recordingTimer = null;
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('senderName', senderName);
+      formData.append('recipientName', recipientName);
+      formData.append('writtenMessage', writtenMessage);
+      
+      // Determinar la extensión del archivo basado en el tipo MIME
+      let extension = 'webm';
+      if (audioBlob.type.includes('ogg')) {
+        extension = 'ogg';
+      } else if (audioBlob.type.includes('mp4') || audioBlob.type.includes('m4a')) {
+        extension = 'm4a';
+      } else if (audioBlob.type.includes('wav')) {
+        extension = 'wav';
+      }
+      
+      formData.append('audio', audioBlob, `voice-message.${extension}`);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creando...';
+      showStatus('Subiendo audio y creando tu tarjeta...', 'loading');
+
+      try {
+        const response = await fetch(`${PAGE_DATA.baseUrl}/api/pages/${PAGE_DATA.code}/personalize`, {
+          method: 'PUT',
+          body: formData,
+        });
+
+        // Verificar si la respuesta es JSON
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(`Error del servidor: ${text}`);
+        }
+
+        if (!response.ok) {
+          throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+        }
+
+        if (data.success) {
+          showStatus('¡Tarjeta creada exitosamente! Redirigiendo...', 'success');
+          
+          // Limpiar URL del blob para liberar memoria
+          if (previewAudio.src) {
+            URL.revokeObjectURL(previewAudio.src);
+          }
+          
+          // Actualizar datos
+          PAGE_DATA.isPersonalized = true;
+          if (data.data.audioUrl) {
+            audio.src = data.data.audioUrl;
+          }
+          
+          const titleElement = document.querySelector('.player-container h1');
+          const descElement = document.querySelector('.player-container .description');
+          
+          if (titleElement) {
+            titleElement.textContent = data.data.title || `De ${data.data.senderName} para ${data.data.recipientName}`;
+          }
+          if (descElement) {
+            descElement.textContent = data.data.description || data.data.writtenMessage;
+          }
+
+          // Mostrar GIF si fue seleccionado
+          if (data.data.selectedGifUrl) {
+            displayGifImg.src = data.data.selectedGifUrl;
+            displayGif.style.display = 'block';
+            PAGE_DATA.selectedGifUrl = data.data.selectedGifUrl;
+          }
+
+          // Cambiar a vista de reproducción
+          setTimeout(() => {
+            personalizationForm.classList.remove('active');
+            playerView.classList.add('active');
+            updateLimitsInfo();
+            updateHeaderTitle();
+            // Hacer scroll al inicio
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 2000);
+        } else {
+          throw new Error(data.message || 'Error al crear la tarjeta');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        let errorMessage = error.message || 'Error al crear la tarjeta';
+        
+        // Mensajes más amigables
+        if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          errorMessage = 'Error de conexión. Verifica que el servidor esté corriendo.';
+        } else if (errorMessage.includes('413')) {
+          errorMessage = 'El archivo de audio es demasiado grande. Intenta grabar un audio más corto.';
+        } else if (errorMessage.includes('400')) {
+          errorMessage = 'Datos inválidos. Por favor, verifica que todos los campos estén completos.';
+        }
+        
+        showStatus(`Error: ${errorMessage}`, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Crear Tarjeta';
+      }
+    });
+
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = `status-message active ${type}`;
+      setTimeout(() => {
+        statusMessage.classList.remove('active');
+      }, type === 'error' ? 5000 : 3000);
+    }
+
+    // Verificar si está expirado
+    function isExpired() {
+      if (!PAGE_DATA.expirationDate) return false;
+      return new Date() > PAGE_DATA.expirationDate;
+    }
+
+    // Verificar si puede reproducir
+    function canPlay() {
+      if (isExpired()) return false;
+      return PAGE_DATA.playCount < PAGE_DATA.maxPlays;
+    }
+
+    // Mostrar información de límites
+    function updateLimitsInfo() {
+      if (isExpired()) {
+        limitsInfo.textContent = '⏰ Esta tarjeta expiró el 14 de febrero a las 12:00 AM';
+        limitsInfo.className = 'limits-info expired';
+        playButton.disabled = true;
+        audio.disabled = true;
+        updateHeaderTitle();
+        return;
+      }
+
+      const remaining = PAGE_DATA.maxPlays - PAGE_DATA.playCount;
+      if (remaining <= 0) {
+        limitsInfo.textContent = '🔒 Has alcanzado el límite de reproducciones (5)';
+        limitsInfo.className = 'limits-info expired';
+        playButton.disabled = true;
+        audio.disabled = true;
+        updateHeaderTitle();
+      } else {
+        limitsInfo.textContent = `🎵 Reproducciones restantes: ${remaining} de ${PAGE_DATA.maxPlays}`;
+        limitsInfo.className = 'limits-info';
+        updateHeaderTitle();
+      }
+    }
+
+    // Estado del reproductor
+    let isPlaying = false;
+    let hasIncrementedPlay = false;
+
+    // Actualizar estado cuando el audio se carga
+    audio.addEventListener('loadedmetadata', () => {
+      status.textContent = 'Audio listo para reproducir';
+    });
+
+    audio.addEventListener('canplay', () => {
+      status.textContent = 'Audio listo para reproducir';
+    });
+
+    audio.addEventListener('error', (e) => {
+      status.textContent = 'Error al cargar el audio. Por favor, intenta más tarde.';
+      status.style.color = '#dc3545';
+      playButton.disabled = true;
+      console.error('Error loading audio:', e);
+    });
+
+    // Controlar reproducción desde el botón
+    playButton.addEventListener('click', async () => {
+      if (!canPlay()) {
+        alert('No puedes reproducir más veces. Límite alcanzado o expirado.');
+        return;
+      }
+
+      if (isPlaying) {
+        audio.pause();
+        playButton.textContent = '▶';
+        playButton.classList.remove('playing');
+        isPlaying = false;
+      } else {
+        // Incrementar contador solo cuando empieza a reproducir
+        if (!hasIncrementedPlay) {
+          try {
+            const response = await fetch(`${PAGE_DATA.baseUrl}/api/pages/${PAGE_DATA.code}/play`, {
+              method: 'POST',
+            });
+            const data = await response.json();
+            if (data.success) {
+              PAGE_DATA.playCount = data.data.playCount;
+              
+              // Si la tarjeta fue destruida, mostrar mensaje y ocultar reproductor
+              if (data.data.destroyed) {
+                updateLimitsInfo();
+                updateHeaderTitle();
+                showStatus('🔒 La tarjeta se ha autodestruido', 'error');
+                return;
+              }
+              
+              updateLimitsInfo();
+              updateHeaderTitle();
+              hasIncrementedPlay = true;
+            }
+          } catch (error) {
+            console.error('Error incrementing play count:', error);
+          }
+        }
+
+        audio.play().then(() => {
+          playButton.textContent = '⏸';
+          playButton.classList.add('playing');
+          isPlaying = true;
+          status.textContent = 'Reproduciendo...';
+        }).catch((error) => {
+          console.error('Error playing audio:', error);
+          status.textContent = 'Error al reproducir el audio';
+          status.style.color = '#dc3545';
+        });
+      }
+    });
+
+    // Sincronizar con los controles nativos del audio
+    audio.addEventListener('play', () => {
+      playButton.textContent = '⏸';
+      playButton.classList.add('playing');
+      isPlaying = true;
+      status.textContent = 'Reproduciendo...';
+    });
+
+    audio.addEventListener('pause', () => {
+      playButton.textContent = '▶';
+      playButton.classList.remove('playing');
+      isPlaying = false;
+      status.textContent = 'Pausado';
+    });
+
+    audio.addEventListener('ended', () => {
+      playButton.textContent = '▶';
+      playButton.classList.remove('playing');
+      isPlaying = false;
+      hasIncrementedPlay = false;
+      status.textContent = 'Audio finalizado';
+    });
+
+    // Mostrar progreso
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        if (isPlaying) {
+          status.textContent = `Reproduciendo... ${Math.round(percent)}%`;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

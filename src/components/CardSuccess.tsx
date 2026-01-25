@@ -1,0 +1,148 @@
+import { CheckCircle, Download, Copy, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { getCardUrl } from '../utils/cardCode';
+
+interface CardSuccessProps {
+  code: string;
+  onCreateAnother: () => void;
+}
+
+export function CardSuccess({ code, onCreateAnother }: CardSuccessProps) {
+  const [copied, setCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    generateQRCode();
+  }, [code]);
+
+  const generateQRCode = async () => {
+    const QRCode = (await import('qrcode')).default;
+    const url = getCardUrl(code);
+
+    try {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        await QRCode.toCanvas(canvas, url, {
+          width: 300,
+          margin: 2,
+          color: {
+            dark: '#DC2626',
+            light: '#FFFFFF',
+          },
+        });
+        const dataUrl = canvas.toDataURL();
+        setQrDataUrl(dataUrl);
+      }
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    const url = getCardUrl(code);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+    }
+  };
+
+  const downloadQR = () => {
+    if (!qrDataUrl) return;
+
+    const link = document.createElement('a');
+    link.download = `tarjeta-${code}.png`;
+    link.href = qrDataUrl;
+    link.click();
+  };
+
+  return (
+    <div
+      className="min-h-screen bg-cover bg-center bg-fixed py-8"
+      style={{
+        backgroundImage: 'url(https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)',
+      }}
+    >
+      <div className="absolute inset-0 bg-black/40"></div>
+      <div className="relative">
+      <div className="container mx-auto px-4 max-w-2xl">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-white">
+            <div className="flex items-center justify-center mb-2">
+              <CheckCircle className="w-12 h-12" />
+            </div>
+            <h2 className="text-3xl font-bold text-center">¡Tarjeta Creada!</h2>
+          </div>
+
+          <div className="p-8 space-y-6">
+            <div className="text-center">
+              <p className="text-lg text-gray-700 mb-2">
+                Tu tarjeta ha sido creada exitosamente
+              </p>
+              <p className="text-sm text-gray-600">
+                Código: <span className="font-mono font-bold text-red-600">{code}</span>
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="font-bold text-lg mb-4 text-center">Código QR</h3>
+              <div className="flex justify-center mb-4">
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <canvas ref={canvasRef} className="mx-auto"></canvas>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={downloadQR}
+                  className="w-full flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Descargar QR</span>
+                </button>
+
+                <button
+                  onClick={copyToClipboard}
+                  className="w-full flex items-center justify-center space-x-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-5 h-5" />
+                      <span>¡Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-5 h-5" />
+                      <span>Copiar Enlace</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-bold text-blue-900 mb-2">Próximos pasos:</h4>
+              <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+                <li>Descarga el código QR</li>
+                <li>Imprime tu tarjeta física e incluye el QR</li>
+                <li>Entrega la tarjeta a esa persona especial</li>
+                <li>Cuando escanee el QR, podrá ver tu mensaje y escuchar tu voz</li>
+              </ol>
+            </div>
+
+            <button
+              onClick={onCreateAnother}
+              className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-4 px-8 rounded-full text-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
+            >
+              Crear Otra Tarjeta
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  );
+}
