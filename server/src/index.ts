@@ -8,7 +8,8 @@ import { audioRouter } from './routes/audio.routes.js';
 import { pageRouter } from './routes/page.routes.js';
 import { publicPageRouter } from './routes/publicPage.routes.js';
 import { storeLocationRouter } from './routes/storeLocation.routes.js';
-import { gifRouter } from './routes/gif.routes.js';
+import { imageRouter } from './routes/image.routes.js';
+import { staticPagesRouter } from './routes/staticPages.routes.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -49,7 +50,8 @@ app.use('/api/audio', audioRouter);
 app.use('/api/pages', pageRouter); // API de páginas (POST /api/pages/create, GET /api/pages, etc.)
 app.use('/page', publicPageRouter); // Páginas públicas (GET /page/:code)
 app.use('/api/stores', storeLocationRouter); // API de tiendas (GET /api/stores/:id, etc.)
-app.use('/api/gifs', gifRouter); // API de GIFs (GET /api/gifs/search)
+app.use('/api/images', imageRouter); // API de imágenes (GET /api/images/:filename)
+app.use('/', staticPagesRouter); // Páginas estáticas (GET /terminos, GET /antibullying)
 
 // Health check (legacy, redirige a /api/health)
 app.get('/health', (req, res) => {

@@ -146,7 +146,7 @@ export function Dashboard() {
     try {
       const canvas = canvasRefs.current[code];
       if (canvas) {
-        const dataUrl = await QRCode.toCanvas(canvas, url, {
+        await QRCode.toCanvas(canvas, url, {
           width: 200,
           margin: 2,
           color: {
@@ -154,6 +154,7 @@ export function Dashboard() {
             light: '#FFFFFF',
           },
         });
+        const dataUrl = canvas.toDataURL();
         setQrCodes((prev) => ({ ...prev, [code]: dataUrl }));
       }
     } catch (error) {

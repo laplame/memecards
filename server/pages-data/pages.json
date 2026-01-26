@@ -1,23 +1,20 @@
 [
   {
-    "id": "9040507f-f6ed-4bb0-aa2a-dd09a675ffc2",
-    "code": "W5LH9486",
-    "audioUrl": "http://localhost:3000/api/audio/stream/test1.mp3",
-    "audioFilename": "processed/test-1.mp3",
-    "title": "Página de Prueba 1",
-    "description": "Esta es una página de prueba para el dashboard",
-    "createdAt": "2026-01-24T22:46:55.929Z",
-    "pageUrl": "http://localhost:3000/page/W5LH9486"
-  },
-  {
     "id": "2f8a51be-965f-46ec-a4da-47cb7cf8c7be",
     "code": "57MTDKB3",
-    "audioUrl": "http://localhost:3000/api/audio/stream/test2.mp3",
-    "audioFilename": "processed/test-2.mp3",
-    "title": "Página de Prueba 2",
-    "description": "Segunda página de prueba",
+    "audioUrl": "http://localhost:3000/api/audio/stream/0e77262c-51d8-4d94-87e9-44827ab55236.mp3",
+    "audioFilename": "processed/0e77262c-51d8-4d94-87e9-44827ab55236.mp3",
+    "title": "De Shate para Pha",
+    "description": "❤️Holi que todo te vay super bien! te mando un beso",
     "createdAt": "2026-01-24T22:46:55.938Z",
-    "pageUrl": "http://localhost:3000/page/57MTDKB3"
+    "pageUrl": "http://localhost:3000/page/57MTDKB3",
+    "isPersonalized": true,
+    "senderName": "Shate",
+    "recipientName": "Pha",
+    "writtenMessage": "❤️Holi que todo te vay super bien! te mando un beso",
+    "imageUrl": "http://localhost:3000/api/images/5becf55c-0bb5-495b-b254-72b308874c5f.png",
+    "imageFilename": "5becf55c-0bb5-495b-b254-72b308874c5f.png",
+    "personalizedAt": "2026-01-26T19:34:16.879Z"
   },
   {
     "id": "482c1ac5-ab0f-4f0e-b76c-4ab7a4ac14ae",

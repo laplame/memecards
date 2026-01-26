@@ -36,10 +36,8 @@ export async function renderAudioPage(page: AudioPage): Promise<string> {
     template = template.replace(/{{SENDER_NAME}}/g, escapeHtml(page.senderName || ''));
     template = template.replace(/{{RECIPIENT_NAME}}/g, escapeHtml(page.recipientName || ''));
     template = template.replace(/{{WRITTEN_MESSAGE}}/g, escapeHtml(page.writtenMessage || ''));
-    const selectedGifUrl = page.selectedGifUrl || '';
-    const selectedGifId = page.selectedGifId || '';
-    template = template.replace(/{{SELECTED_GIF_URL}}/g, escapeHtml(selectedGifUrl));
-    template = template.replace(/{{SELECTED_GIF_ID}}/g, escapeHtml(selectedGifId));
+    const imageUrl = page.imageUrl || '';
+    template = template.replace(/{{IMAGE_URL}}/g, escapeHtml(imageUrl));
     
     return template;
   } catch (error) {

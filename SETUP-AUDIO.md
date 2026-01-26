@@ -1,101 +1,77 @@
 # Configuración de Audio
 
-Hay dos opciones para almacenar los archivos de audio:
+Este proyecto usa el backend local para procesar y almacenar archivos de audio.
 
-## Opción 1: Usar Supabase Storage (Recomendado si ya usas Supabase)
+## Backend Local (Recomendado)
 
-### Crear el bucket en Supabase
+El backend local procesa los archivos de audio usando FFmpeg y los almacena en el sistema de archivos.
 
-1. Ve a tu proyecto en Supabase Dashboard
-2. Navega a **Storage** en el menú lateral
-3. Haz clic en **New bucket**
-4. Crea un bucket con:
-   - **Name**: `card-audios`
-   - **Public bucket**: ✅ Activado (para que las URLs sean públicas)
+### Requisitos
 
-### O ejecuta el SQL
+- Node.js 18+
+- FFmpeg instalado en el sistema
 
-Ejecuta el siguiente SQL en el SQL Editor de Supabase:
+### Instalar FFmpeg
 
-```sql
--- Create storage bucket for audio files
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('card-audios', 'card-audios', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Policy for uploading audio files
-CREATE POLICY "Anyone can upload audio files"
-  ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'card-audios');
-
--- Policy for reading audio files
-CREATE POLICY "Anyone can view audio files"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'card-audios');
+**macOS:**
+```bash
+brew install ffmpeg
 ```
 
-## Opción 2: Usar el Backend Local
-
-Si prefieres usar el backend que creamos (recomendado para desarrollo):
-
-### 1. Configurar la variable de entorno
-
-Crea o edita `.env` en la raíz del proyecto frontend:
-
-```env
-VITE_BACKEND_URL=http://localhost:3000
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install ffmpeg
 ```
 
-### 2. Asegúrate de que el backend esté corriendo
+**Windows:**
+Descargar desde [ffmpeg.org](https://ffmpeg.org/download.html) o usar Chocolatey:
+```bash
+choco install ffmpeg
+```
 
+### Configuración
+
+1. Asegúrate de que el servidor backend esté corriendo:
 ```bash
 cd server
 npm install
 npm run dev
 ```
 
-El backend automáticamente:
-- Procesará el audio con FFmpeg
-- Creará una página única con URL
-- Almacenará el archivo procesado
+2. Verifica la variable `VITE_BACKEND_URL` en tu `.env`:
+```env
+VITE_BACKEND_URL=http://localhost:3000
+```
 
-### 3. El frontend usará automáticamente el backend
+3. El backend procesará automáticamente los archivos de audio y los guardará en:
+   - `server/uploads/` - Archivos originales
+   - `server/processed/` - Archivos procesados
 
-Si el bucket de Supabase no existe, el frontend automáticamente intentará usar el backend local.
+### Ventajas del Backend Local
+
+- ✅ No requiere servicios externos
+- ✅ Control total sobre el procesamiento
+- ✅ Procesamiento rápido con FFmpeg
+- ✅ Almacenamiento local
 
 ## Solución de Problemas
 
-### Error: "Bucket not found"
+### Error: "Error al crear la tarjeta"
 
-**Solución 1**: Crea el bucket en Supabase (ver Opción 1 arriba)
+**Solución**: Verifica que el servidor backend esté corriendo en el puerto configurado (por defecto 3000)
 
-**Solución 2**: Usa el backend local (ver Opción 2 arriba)
+```bash
+# Verificar que el servidor esté corriendo
+curl http://localhost:3000/api/health
+```
 
-### Error: "Permission dismissed" (Micrófono)
+### Error: "FFmpeg no encontrado"
 
-1. Ve a la configuración de tu navegador
-2. Busca los permisos del sitio
-3. Permite el acceso al micrófono
-4. Recarga la página
+**Solución**: Instala FFmpeg en tu sistema (ver instrucciones arriba)
 
-### Error: "Backend no responde"
+### Error: "No se pudo acceder al micrófono"
 
-1. Verifica que el servidor esté corriendo: `cd server && npm run dev`
-2. Verifica que el puerto 3000 esté disponible
-3. Verifica la variable `VITE_BACKEND_URL` en tu `.env`
-
-## Ventajas de cada opción
-
-### Supabase Storage
-- ✅ No requiere servidor adicional
-- ✅ Escalable automáticamente
-- ✅ CDN incluido
-- ❌ Requiere cuenta de Supabase
-
-### Backend Local
-- ✅ Control total sobre el procesamiento
-- ✅ Procesamiento con FFmpeg incluido
-- ✅ Páginas únicas con URLs
-- ✅ No requiere Supabase Storage
-- ❌ Requiere servidor corriendo
-- ❌ Requiere FFmpeg instalado
+**Solución**: 
+1. Permite el acceso al micrófono en la configuración de tu navegador
+2. Asegúrate de que estés usando HTTPS o localhost (los navegadores requieren permisos para micrófono)

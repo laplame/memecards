@@ -1,5 +1,6 @@
 import { Heart, Gift, Mic, QrCode } from 'lucide-react';
 import { StoreLocations } from './StoreLocations';
+import { ValentineCardAnimation } from './ValentineCardAnimation';
 
 interface LandingPageProps {
   onCreateCard: () => void;
@@ -23,9 +24,19 @@ export function LandingPage({ onCreateCard }: LandingPageProps) {
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
             Tarjetas con Corazón
           </h1>
-          <p className="text-xl text-gray-100 max-w-2xl mx-auto drop-shadow-md">
+          <p className="text-xl text-gray-100 max-w-2xl mx-auto drop-shadow-md mb-6">
             Crea tarjetas híbridas únicas que combinan el encanto físico con la magia digital
           </p>
+          <div className="max-w-3xl mx-auto mt-6 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+            <p className="text-xl md:text-2xl font-semibold text-white drop-shadow-lg italic text-center">
+              "Escanea, personaliza y regala… porque nada dice 'te quiero' como un glitch multiversal de amor." 🌌💘
+            </p>
+          </div>
+          
+          {/* Animación de tarjeta de San Valentín */}
+          <div className="mt-12 mb-8">
+            <ValentineCardAnimation />
+          </div>
         </header>
 
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden mb-16">

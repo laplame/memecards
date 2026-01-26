@@ -1,0 +1,304 @@
+.valentine-card-container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  margin: 40px auto;
+  background: #fce4ec;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  perspective: 1000px;
+}
+
+/* Sombra del sobre */
+.envelope-shadow {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 30px;
+  background: rgba(136, 136, 136, 0.3);
+  border-radius: 50%;
+  filter: blur(15px);
+  z-index: 1;
+  animation: shadowPulse 3s ease-in-out infinite;
+}
+
+@keyframes shadowPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+/* Sobre */
+.envelope {
+  position: relative;
+  width: 280px;
+  height: 200px;
+  z-index: 10;
+  transform-style: preserve-3d;
+}
+
+/* Flap superior del sobre (abierto) */
+.envelope-flap {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  width: 280px;
+  height: 120px;
+  background: #ffadad;
+  clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+  transform-origin: top center;
+  transform: rotateX(-15deg);
+  z-index: 12;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+  animation: flapMove 4s ease-in-out infinite;
+}
+
+@keyframes flapMove {
+  0%, 100% {
+    transform: rotateX(-15deg);
+  }
+  50% {
+    transform: rotateX(-20deg);
+  }
+}
+
+/* Cuerpo del sobre */
+.envelope-body {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 280px;
+  height: 140px;
+  background: #ffadad;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  z-index: 11;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Tarjeta que se asoma */
+.card {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 180px;
+  background: #fffacd;
+  border-radius: 8px;
+  z-index: 13;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  animation: cardSlide 5s ease-in-out infinite;
+  overflow: hidden;
+}
+
+@keyframes cardSlide {
+  0%, 100% {
+    top: -100px;
+  }
+  50% {
+    top: -110px;
+  }
+}
+
+/* Borde punteado superior de la tarjeta */
+.card-border {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.border-dot {
+  width: 4px;
+  height: 4px;
+  background: #2c3e50;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.heart-in-border {
+  background: transparent;
+  font-size: 10px;
+  width: auto;
+  height: auto;
+  animation: heartPulse 2s ease-in-out infinite;
+}
+
+@keyframes heartPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+/* Texto de la tarjeta */
+.card-text {
+  margin-top: 30px;
+  text-align: center;
+  font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
+  color: #2c3e50;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.text-word {
+  display: inline-block;
+  position: relative;
+}
+
+.heart-dot {
+  font-size: 14px;
+  margin-left: 2px;
+  display: inline-block;
+  animation: heartBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes heartBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.2);
+  }
+}
+
+/* Corazones flotantes */
+.floating-heart {
+  position: absolute;
+  font-size: 20px;
+  color: #ff0000;
+  z-index: 5;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.heart-1 {
+  top: 20%;
+  left: 15%;
+  animation: floatUp1 4s ease-in-out infinite;
+}
+
+.heart-2 {
+  top: 25%;
+  left: 20%;
+  animation: floatUp2 5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.heart-3 {
+  top: 15%;
+  left: 25%;
+  animation: floatUp3 4.5s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes floatUp1 {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-30px) translateX(10px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-60px) translateX(20px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes floatUp2 {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-40px) translateX(-5px) scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-70px) translateX(-10px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes floatUp3 {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-35px) translateX(15px) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-65px) translateX(25px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .valentine-card-container {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .envelope {
+    width: 200px;
+    height: 140px;
+  }
+  
+  .envelope-flap {
+    width: 200px;
+    height: 85px;
+    top: -45px;
+  }
+  
+  .envelope-body {
+    width: 200px;
+    height: 100px;
+    top: 40px;
+  }
+  
+  .card {
+    width: 170px;
+    height: 130px;
+    top: -70px;
+  }
+  
+  .card-text {
+    font-size: 18px;
+    margin-top: 20px;
+  }
+  
+  .floating-heart {
+    font-size: 16px;
+  }
+}

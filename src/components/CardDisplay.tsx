@@ -1,6 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
 import { Heart, Play, Pause, Volume2, Loader2 } from 'lucide-react';
-import { supabase, Card } from '../lib/supabase';
+
+interface Card {
+  code: string;
+  senderName?: string;
+  recipientName?: string;
+  writtenMessage?: string;
+  audioUrl: string;
+  imageUrl?: string;
+  title?: string;
+  description?: string;
+}
 
 interface CardDisplayProps {
   code: string;
@@ -19,18 +29,34 @@ export function CardDisplay({ code }: CardDisplayProps) {
 
   const loadCard = async () => {
     try {
-      const { data, error } = await supabase
-        .from('cards')
-        .select('*')
-        .eq('code', code.toUpperCase())
-        .maybeSingle();
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const response = await fetch(`${backendUrl}/api/pages/${code.toUpperCase()}`);
 
-      if (error) throw error;
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('Tarjeta no encontrada');
+        } else {
+          throw new Error('Error al cargar la tarjeta');
+        }
+        return;
+      }
 
-      if (!data) {
-        setError('Tarjeta no encontrada');
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        const pageData = data.data;
+        setCard({
+          code: pageData.code,
+          senderName: pageData.senderName || 'Anónimo',
+          recipientName: pageData.recipientName || 'Tú',
+          writtenMessage: pageData.writtenMessage || pageData.description || '',
+          audioUrl: pageData.audioUrl,
+          imageUrl: pageData.imageUrl,
+          title: pageData.title,
+          description: pageData.description,
+        });
       } else {
-        setCard(data);
+        setError('Tarjeta no encontrada');
       }
     } catch (err) {
       console.error('Error loading card:', err);
@@ -127,22 +153,32 @@ export function CardDisplay({ code }: CardDisplayProps) {
             <div className="relative z-10 text-center text-white">
               <Heart className="w-16 h-16 fill-white mx-auto mb-4 animate-pulse" />
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                Para {card.recipient_name}
+                Para {card.recipientName}
               </h1>
               <p className="text-lg opacity-90">
-                De: {card.sender_name}
+                De: {card.senderName}
               </p>
             </div>
           </div>
 
           <div className="p-8 md:p-12 space-y-8">
+            {card.imageUrl && (
+              <div className="bg-white rounded-2xl p-4 shadow-md">
+                <img
+                  src={card.imageUrl}
+                  alt="Tarjeta personalizada"
+                  className="w-full h-auto rounded-xl object-cover max-h-96"
+                />
+              </div>
+            )}
+
             <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-6 md:p-8">
               <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
-                {card.message}
+                {card.writtenMessage}
               </p>
             </div>
 
-            {card.audio_url && (
+            {card.audioUrl && (
               <div className="bg-gray-50 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -174,7 +210,7 @@ export function CardDisplay({ code }: CardDisplayProps) {
 
                 <audio
                   ref={audioRef}
-                  src={card.audio_url}
+                  src={card.audioUrl}
                   onEnded={() => setIsPlaying(false)}
                   className="hidden"
                 />

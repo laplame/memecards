@@ -21,8 +21,8 @@ export interface AudioPage {
   senderName?: string;
   recipientName?: string;
   writtenMessage?: string;
-  selectedGifUrl?: string;
-  selectedGifId?: string;
+  imageUrl?: string;
+  imageFilename?: string;
 }
 
 const pagesDir = process.env.PAGES_DIR || './pages-data';
@@ -79,12 +79,17 @@ export async function createAudioPage(
   options?: {
     title?: string;
     description?: string;
+    senderName?: string;
+    recipientName?: string;
+    writtenMessage?: string;
+    imageUrl?: string;
+    imageFilename?: string;
   }
 ): Promise<AudioPage> {
   const pages = await loadPages();
   
   // Generar código único (verificar que no exista)
-  let code: string;
+  let code: string = '';
   let exists = true;
   while (exists) {
     code = generateUniqueCode();
@@ -106,10 +111,15 @@ export async function createAudioPage(
     description: options?.description || 'Reproduce el audio',
     createdAt: new Date(),
     pageUrl,
-    isPersonalized: false,
+    isPersonalized: !!options?.senderName || !!options?.recipientName || !!options?.writtenMessage || !!options?.imageUrl,
     playCount: 0,
     maxPlays: 5,
     expirationDate,
+    senderName: options?.senderName,
+    recipientName: options?.recipientName,
+    writtenMessage: options?.writtenMessage,
+    imageUrl: options?.imageUrl,
+    imageFilename: options?.imageFilename,
   };
 
   pages.push(newPage);
@@ -163,8 +173,8 @@ export async function updatePageByCode(
     senderName?: string;
     recipientName?: string;
     writtenMessage?: string;
-    selectedGifUrl?: string;
-    selectedGifId?: string;
+    imageUrl?: string;
+    imageFilename?: string;
   }
 ): Promise<AudioPage | null> {
   const pages = await loadPages();

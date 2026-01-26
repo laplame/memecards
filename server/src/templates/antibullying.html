@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política Anti-Bullying - Tarjetas con Corazón</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #fce4ec 0%, #ffe0e6 100%);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4b5563;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-button:hover {
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 1.25rem;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      padding: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      .content-card {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .header-icon {
+      font-size: 2.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-icon {
+      font-size: 1.5rem;
+    }
+
+    p {
+      color: #374151;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      list-style: disc;
+      list-style-position: inside;
+      margin-left: 1rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    section {
+      margin-bottom: 2rem;
+    }
+
+    .alert-box {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 0.5rem;
+    }
+
+    .alert-box p {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #991b1b;
+      margin: 0;
+    }
+
+    .info-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+    }
+
+    .info-box p {
+      font-size: 0.875rem;
+      color: #1e40af;
+      margin: 0;
+    }
+
+    .info-box strong {
+      font-weight: 600;
+    }
+
+    .footer-box {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
+      color: white;
+      border-radius: 0.75rem;
+    }
+
+    .footer-box p {
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-box p:first-child {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-box p:last-child {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="javascript:history.back()" class="back-button">Volver</a>
+
+    <div class="content-card">
+      <div class="header">
+        <span class="header-icon">🛡️</span>
+        <h1>Política Anti-Bullying</h1>
+      </div>
+      
+      <div class="alert-box">
+        <p>
+          Estamos comprometidos a crear un ambiente seguro, respetuoso y libre de acoso para todos nuestros usuarios.
+        </p>
+      </div>
+
+      <section>
+        <h2>
+          <span class="section-icon">❤️</span>
+          Nuestro Compromiso
+        </h2>
+        <p>
+          Creemos que cada persona merece ser tratada con respeto y dignidad. No toleramos ningún tipo de 
+          acoso, intimidación, discriminación o comportamiento dañino en nuestra plataforma.
+        </p>
+      </section>
+
+      <section>
+        <h2>
+          <span class="section-icon">🛡️</span>
+          ¿Qué Consideramos Bullying?
+        </h2>
+        <p style="margin-bottom: 0.75rem;">El bullying incluye, pero no se limita a:</p>
+        <ul>
+          <li>Mensajes de voz o texto que insulten, amenacen o intimiden</li>
+          <li>Contenido que discrimine por raza, género, orientación sexual, religión o discapacidad</li>
+          <li>Compartir información personal de otros sin consentimiento</li>
+          <li>Crear contenido falso o difamatorio sobre otras personas</li>
+          <li>Cualquier forma de acoso cibernético o digital</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>
+          <span class="section-icon">👥</span>
+          Nuestras Acciones
+        </h2>
+        <p style="margin-bottom: 0.75rem;">Cuando detectamos o recibimos reportes de contenido que viola esta política:</p>
+        <ul>
+          <li>Eliminamos inmediatamente el contenido ofensivo</li>
+          <li>Prohibimos permanentemente a los usuarios que violen esta política</li>
+          <li>Colaboramos con las autoridades cuando sea necesario</li>
+          <li>Mantenemos un registro de violaciones para prevenir futuros incidentes</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Reportar Bullying</h2>
+        <p>
+          Si encuentras contenido que viola nuestra política anti-bullying, por favor repórtalo inmediatamente. 
+          Puedes contactarnos a través de nuestro sistema de reportes o por correo electrónico.
+        </p>
+        <div class="info-box">
+          <p>
+            <strong>Email de reportes:</strong> reportes@memecards.com
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Consecuencias</h2>
+        <p>
+          Las violaciones de esta política resultarán en la eliminación inmediata del contenido y pueden 
+          resultar en la prohibición permanente de la cuenta. En casos graves, podemos tomar acciones legales.
+        </p>
+      </section>
+
+      <div class="footer-box">
+        <p>Juntos podemos crear un espacio seguro</p>
+        <p>
+          Tu ayuda es esencial para mantener nuestra comunidad libre de acoso. Si ves algo, di algo.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

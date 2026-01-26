@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { upload } from '../middleware/upload.js';
+import { uploadImage } from '../middleware/uploadImage.js';
 import { processAudio } from '../services/audioProcessor.js';
 import { createAudioPage, getPageByCode, getAllPages, deletePageByCode, updatePageByCode, incrementPlayCount } from '../services/pageService.js';
 import { generateAdditionalPages } from '../services/autoGeneratePages.js';
@@ -15,29 +16,56 @@ const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
  */
 router.post(
   '/create',
-  upload.single('audio'),
+  upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+  ]),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!req.file) {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      if (!files.audio || !files.audio[0]) {
         throw new AppError('No se proporcionó ningún archivo de audio', 400);
       }
 
-      const { title, description, format, bitrate, sampleRate } = req.body;
+      const audioFile = files.audio[0];
+      const imageFile = files.image?.[0];
+
+      const { title, description, format, bitrate, sampleRate, senderName, recipientName, writtenMessage } = req.body;
 
       // Procesar el audio
-      const processed = await processAudio(req.file.path, {
+      const processed = await processAudio(audioFile.path, {
         format: (format as 'mp3' | 'wav' | 'ogg') || 'mp3',
         bitrate: bitrate ? parseInt(bitrate, 10) : undefined,
         sampleRate: sampleRate ? parseInt(sampleRate, 10) : undefined,
       });
+
+      // Procesar la imagen si existe
+      let imageUrl: string | undefined;
+      let imageFilename: string | undefined;
+      
+      if (imageFile) {
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        imageUrl = `${baseUrl}/api/images/${imageFile.filename}`;
+        imageFilename = imageFile.filename;
+      }
+
+      // Generar título y descripción si no se proporcionaron
+      const finalTitle = title || (senderName && recipientName ? `Tarjeta de ${senderName} para ${recipientName}` : 'Audio Player');
+      const finalDescription = description || writtenMessage || 'Reproduce el audio';
 
       // Crear la página principal
       const page = await createAudioPage(
         processed.url,
         processed.processedPath,
         {
-          title: title || 'Audio Player',
-          description: description || 'Reproduce el audio',
+          title: finalTitle,
+          description: finalDescription,
+          senderName,
+          recipientName,
+          writtenMessage,
+          imageUrl,
+          imageFilename,
         }
       );
 
@@ -113,7 +141,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.put(
   '/:code/personalize',
-  upload.single('audio'),
+  upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+  ]),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { code } = req.params;
@@ -127,18 +158,22 @@ router.put(
         throw new AppError('Esta página ya fue personalizada', 400);
       }
 
-      const { senderName, recipientName, writtenMessage, title, description, selectedGifUrl, selectedGifId } = req.body;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const { senderName, recipientName, writtenMessage, title, description } = req.body;
       let audioUrl = page.audioUrl;
       let audioFilename = page.audioFilename;
+      let imageUrl = page.imageUrl;
+      let imageFilename = page.imageFilename;
 
       // Si se subió un nuevo audio, procesarlo
-      if (req.file) {
+      if (files.audio && files.audio[0]) {
+        const audioFile = files.audio[0];
         try {
-          console.log(`📤 Procesando audio: ${req.file.originalname} (${req.file.mimetype}, ${(req.file.size / 1024 / 1024).toFixed(2)} MB)`);
+          console.log(`📤 Procesando audio: ${audioFile.originalname} (${audioFile.mimetype}, ${(audioFile.size / 1024 / 1024).toFixed(2)} MB)`);
           
-          const processed = await processAudio(req.file.path, {
+          const processed = await processAudio(audioFile.path, {
             format: 'mp3',
-            bitrate: '128k', // Calidad estándar para voz
+            bitrate: 128, // Calidad estándar para voz (128 kbps)
             sampleRate: 44100,
           });
           
@@ -154,6 +189,15 @@ router.put(
         throw new AppError('El mensaje de voz es requerido', 400);
       }
 
+      // Si se subió una imagen, procesarla
+      if (files.image && files.image[0]) {
+        const imageFile = files.image[0];
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        imageUrl = `${baseUrl}/api/images/${imageFile.filename}`;
+        imageFilename = imageFile.filename;
+        console.log(`✅ Imagen subida: ${imageUrl}`);
+      }
+
       // Generar título y descripción si no se proporcionaron
       const finalTitle = title || (senderName && recipientName ? `De ${senderName} para ${recipientName}` : page.title);
       const finalDescription = description || writtenMessage || page.description;
@@ -167,8 +211,8 @@ router.put(
         senderName: senderName || page.senderName,
         recipientName: recipientName || page.recipientName,
         writtenMessage: writtenMessage || page.writtenMessage,
-        selectedGifUrl: selectedGifUrl || page.selectedGifUrl,
-        selectedGifId: selectedGifId || page.selectedGifId,
+        imageUrl: imageUrl || page.imageUrl,
+        imageFilename: imageFilename || page.imageFilename,
       });
 
       if (!updatedPage) {

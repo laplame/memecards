@@ -127,6 +127,12 @@
       max-width: 500px;
       width: 100%;
       margin: 0 auto;
+      padding-bottom: 20px;
+    }
+
+    footer {
+      position: relative;
+      z-index: 2;
     }
 
     .form-container {
@@ -485,6 +491,104 @@
     <h1 id="headerTitle">Crea tu Tarjeta</h1>
   </div>
 
+  <!-- Modal de Términos y Condiciones -->
+  <div id="termsModal" style="display: block; position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);">
+    <div style="background: white; border-radius: 25px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <div style="background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%); padding: 24px; text-align: center; color: white; border-radius: 25px 25px 0 0;">
+        <div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
+        <h2 style="font-size: 24px; font-weight: 700; margin: 0;">Términos y Condiciones</h2>
+        <p style="font-size: 14px; opacity: 0.9; margin-top: 8px;">Debes aceptar para continuar</p>
+      </div>
+
+      <div style="padding: 24px; space-y: 16px;">
+        <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: start; gap: 12px;">
+            <div style="font-size: 24px; flex-shrink: 0;">⚠️</div>
+            <div>
+              <h3 style="font-weight: 700; color: #991b1b; margin-bottom: 8px; font-size: 16px;">Política Anti-Bullying y Anti-Acoso</h3>
+              <p style="font-size: 14px; color: #7f1d1d; line-height: 1.5;">
+                Estamos comprometidos a crear un ambiente seguro y respetuoso. No toleramos ningún tipo de acoso, 
+                intimidación, discriminación o comportamiento dañino.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <h4 style="font-weight: 600; margin-bottom: 8px; color: #333; font-size: 15px;">Al crear una tarjeta, te comprometes a:</h4>
+          <ul style="list-style: disc; list-style-position: inside; margin-left: 8px; space-y: 4px; font-size: 14px; color: #666; line-height: 1.6;">
+            <li>No usar contenido ofensivo, discriminatorio o que promueva el acoso</li>
+            <li>Respetar los derechos de propiedad intelectual</li>
+            <li>No compartir información personal de terceros sin consentimiento</li>
+            <li>No crear contenido falso o difamatorio</li>
+            <li>Mantener un ambiente seguro y respetuoso</li>
+          </ul>
+        </div>
+
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+          <p style="font-size: 13px; color: #1e40af; line-height: 1.5;">
+            <strong>Consecuencias:</strong> El contenido que viole esta política será eliminado inmediatamente 
+            y puede resultar en la prohibición permanente de tu cuenta.
+          </p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <p style="font-weight: 600; margin-bottom: 8px; color: #333; font-size: 14px;">Al hacer clic en "Aceptar", confirmas que:</p>
+          <ul style="list-style: disc; list-style-position: inside; margin-left: 8px; font-size: 12px; color: #666; line-height: 1.5;">
+            <li>Has leído y entendido los términos y condiciones</li>
+            <li>Has leído y entendido la política anti-bullying</li>
+            <li>Aceptas cumplir con todas las políticas</li>
+            <li>Entiendes las consecuencias de violar estas políticas</li>
+          </ul>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <a
+            href="/terminos"
+            target="_blank"
+            style="flex: 1; text-align: center; padding: 12px; border: 2px solid #d1d5db; border-radius: 10px; color: #374151; font-weight: 500; text-decoration: none; transition: all 0.2s; background: #f9fafb;"
+            onmouseover="this.style.background='#f3f4f6'"
+            onmouseout="this.style.background='#f9fafb'"
+          >
+            Ver Términos Completos
+          </a>
+          <a
+            href="/antibullying"
+            target="_blank"
+            style="flex: 1; text-align: center; padding: 12px; border: 2px solid #d1d5db; border-radius: 10px; color: #374151; font-weight: 500; text-decoration: none; transition: all 0.2s; background: #f9fafb;"
+            onmouseover="this.style.background='#f3f4f6'"
+            onmouseout="this.style.background='#f9fafb'"
+          >
+            Ver Política Anti-Bullying
+          </a>
+        </div>
+
+        <div style="padding: 16px; background: #f9fafb; border-radius: 10px; margin-bottom: 16px; border-top: 1px solid #e5e7eb;">
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: white; border-radius: 8px; border: 2px solid #e5e7eb; transition: all 0.2s;" 
+                 onmouseover="this.style.borderColor='#ec4899'; this.style.background='#fef2f2'"
+                 onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+            <input
+              type="checkbox"
+              id="isAdultCheckbox"
+              style="width: 20px; height: 20px; cursor: pointer; accent-color: #ef4444;"
+            />
+            <span style="color: #374151; font-weight: 500; font-size: 15px;">
+              Confirmo que soy mayor de edad (18 años o más)
+            </span>
+          </label>
+        </div>
+
+        <button
+          id="acceptTermsBtn"
+          style="width: 100%; padding: 18px; background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); opacity: 0.5; cursor: not-allowed;"
+          disabled
+        >
+          Acepto los Términos y la Política Anti-Bullying
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <!-- Estado de Personalización -->
     <div class="personalization-form" id="personalizationForm">
@@ -551,53 +655,37 @@
               </div>
             </div>
 
-            <!-- Selector de GIFs -->
+            <!-- Selector de Imagen -->
             <div style="margin-top: 10px;">
+              <label for="imageUpload" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #333;">
+                Foto (Opcional)
+              </label>
+              <input 
+                type="file" 
+                id="imageUpload" 
+                name="image"
+                accept="image/*"
+                style="display: none;"
+              >
+              <div id="imagePreviewContainer" style="display: none; margin-top: 10px;">
+                <div style="position: relative; display: inline-block;">
+                  <img id="imagePreview" style="max-width: 100%; max-height: 300px; border-radius: 10px; border: 2px solid #e5e7eb;">
+                  <button 
+                    type="button" 
+                    id="removeImage"
+                    style="position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"
+                  >
+                    ✕ Eliminar
+                  </button>
+                </div>
+              </div>
               <button 
                 type="button" 
-                id="gifButton"
+                id="imageUploadButton"
                 style="width: 100%; padding: 12px; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #333;"
               >
-                🎬 Buscar GIFs
+                📷 Seleccionar Foto
               </button>
-              
-              <div id="gifSearch" style="display: none; margin-top: 10px; padding: 15px; background: #f9fafb; border-radius: 12px; border: 2px solid #e5e7eb;">
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                  <input 
-                    type="text" 
-                    id="gifSearchInput" 
-                    placeholder="Buscar GIFs (amor, corazón, beso...)" 
-                    style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;"
-                  >
-                  <button 
-                    type="button" 
-                    id="gifSearchBtn"
-                    style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;"
-                  >
-                    Buscar
-                  </button>
-                </div>
-                <div id="gifResults" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 300px; overflow-y: auto;">
-                  <!-- GIFs se cargarán aquí -->
-                </div>
-                <div id="gifLoading" style="display: none; text-align: center; padding: 20px; color: #666;">
-                  Cargando GIFs...
-                </div>
-              </div>
-              
-              <div id="selectedGif" style="display: none; margin-top: 10px; padding: 10px; background: #f0fdf4; border-radius: 10px; border: 2px solid #10b981;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-size: 14px; font-weight: 600; color: #065f46;">GIF seleccionado</span>
-                  <button 
-                    type="button" 
-                    id="removeGif"
-                    style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;"
-                  >
-                    Eliminar
-                  </button>
-                </div>
-                <img id="selectedGifImg" style="width: 100%; max-width: 200px; border-radius: 8px; margin-top: 8px;">
-              </div>
             </div>
           </div>
 
@@ -641,12 +729,10 @@
         <h1>{{TITLE}}</h1>
         <p class="description">{{DESCRIPTION}}</p>
         
-        <!-- GIF seleccionado (si existe) -->
-        {{#if SELECTED_GIF_URL}}
-        <div style="margin: 20px 0; text-align: center;">
-          <img src="{{SELECTED_GIF_URL}}" alt="GIF" style="max-width: 100%; max-height: 300px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <!-- Imagen (si existe) -->
+        <div id="displayImage" style="margin: 20px 0; text-align: center; display: none;">
+          <img id="displayImageImg" src="" alt="Foto personalizada" style="max-width: 100%; max-height: 400px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); object-fit: contain;">
         </div>
-        {{/if}}
         
         <div class="audio-player">
           <button class="play-button" id="playButton" aria-label="Reproducir audio">
@@ -666,7 +752,23 @@
         </div>
       </div>
     </div>
+
   </div>
+
+  <!-- Footer con Términos y Condiciones - Siempre visible -->
+  <footer style="position: relative; z-index: 10; margin: 40px auto 60px; padding: 0 20px; max-width: 800px; width: 100%; display: block !important; visibility: visible !important;">
+    <div style="padding: 20px; background: white !important; border-radius: 15px; text-align: center; border: 2px solid #e5e7eb; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); opacity: 1 !important;">
+      <p style="font-size: 12px; color: #333 !important; line-height: 1.6; margin-bottom: 8px; font-weight: 500;">
+        Al usar este servicio, aceptas nuestros 
+        <a href="/terminos" target="_blank" style="color: #ef4444; text-decoration: underline; font-weight: 600;">Términos y Condiciones</a>
+        y nuestra 
+        <a href="/antibullying" target="_blank" style="color: #ef4444; text-decoration: underline; font-weight: 600;">Política Anti-Bullying</a>
+      </p>
+      <p style="font-size: 11px; color: #666 !important; margin-top: 8px;">
+        Nos comprometemos a crear un ambiente seguro y respetuoso. El contenido ofensivo será eliminado inmediatamente.
+      </p>
+    </div>
+  </footer>
 
   <script>
     // Datos de la página
@@ -677,11 +779,11 @@
       playCount: parseInt('{{PLAY_COUNT}}') || 0,
       maxPlays: parseInt('{{MAX_PLAYS}}') || 5,
       expirationDate: '{{EXPIRATION_DATE}}' ? new Date('{{EXPIRATION_DATE}}') : null,
-      selectedGifUrl: '{{SELECTED_GIF_URL}}' || null,
+      imageUrl: '{{IMAGE_URL}}' || null,
     };
 
-    const displayGif = document.getElementById('displayGif');
-    const displayGifImg = document.getElementById('displayGifImg');
+    const displayImage = document.getElementById('displayImage');
+    const displayImageImg = document.getElementById('displayImageImg');
 
     const personalizationForm = document.getElementById('personalizationForm');
     const playerView = document.getElementById('playerView');
@@ -700,16 +802,45 @@
     const emojiPicker = document.getElementById('emojiPicker');
     const emojiGrid = document.getElementById('emojiGrid');
     const closeEmojiPicker = document.getElementById('closeEmojiPicker');
-    const gifButton = document.getElementById('gifButton');
-    const gifSearch = document.getElementById('gifSearch');
-    const gifSearchInput = document.getElementById('gifSearchInput');
-    const gifSearchBtn = document.getElementById('gifSearchBtn');
-    const gifResults = document.getElementById('gifResults');
-    const gifLoading = document.getElementById('gifLoading');
-    const selectedGif = document.getElementById('selectedGif');
-    const selectedGifImg = document.getElementById('selectedGifImg');
-    const removeGif = document.getElementById('removeGif');
+    const imageUpload = document.getElementById('imageUpload');
+    const imageUploadButton = document.getElementById('imageUploadButton');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImage = document.getElementById('removeImage');
     const writtenMessage = document.getElementById('writtenMessage');
+    const termsModal = document.getElementById('termsModal');
+    const acceptTermsBtn = document.getElementById('acceptTermsBtn');
+    const isAdultCheckbox = document.getElementById('isAdultCheckbox');
+    let termsAccepted = false;
+    let isAdult = false;
+
+    // Manejar checkbox de mayor de edad
+    isAdultCheckbox.addEventListener('change', (e) => {
+      isAdult = e.target.checked;
+      if (isAdult) {
+        acceptTermsBtn.disabled = false;
+        acceptTermsBtn.style.opacity = '1';
+        acceptTermsBtn.style.cursor = 'pointer';
+      } else {
+        acceptTermsBtn.disabled = true;
+        acceptTermsBtn.style.opacity = '0.5';
+        acceptTermsBtn.style.cursor = 'not-allowed';
+      }
+    });
+
+    // Manejar aceptación de términos
+    acceptTermsBtn.addEventListener('click', () => {
+      if (!isAdult) {
+        alert('Debes confirmar que eres mayor de edad para continuar');
+        return;
+      }
+      termsAccepted = true;
+      termsModal.style.display = 'none';
+      submitBtn.disabled = false;
+    });
+
+    // Bloquear el botón de submit hasta aceptar términos
+    submitBtn.disabled = true;
 
     let mediaRecorder = null;
     let audioChunks = [];
@@ -717,8 +848,7 @@
     let recordingStream = null;
     let recordingStartTime = null;
     let recordingTimer = null;
-    let selectedGifUrl = null;
-    let selectedGifId = null;
+    let selectedImageFile = null;
 
     // Emoticones populares para San Valentín
     const popularEmojis = [
@@ -772,107 +902,45 @@
       emojiPicker.style.display = 'none';
     });
 
-    // Toggle selector de GIFs
-    gifButton.addEventListener('click', () => {
-      if (gifSearch.style.display === 'none') {
-        gifSearch.style.display = 'block';
-        // Cargar GIFs populares de amor
-        searchGifs('love');
-      } else {
-        gifSearch.style.display = 'none';
+    // Manejar selección de imagen
+    imageUploadButton.addEventListener('click', () => {
+      imageUpload.click();
+    });
+
+    imageUpload.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+          showStatus('Por favor selecciona un archivo de imagen válido', 'error');
+          return;
+        }
+        
+        // Validar tamaño (10MB máximo)
+        if (file.size > 10 * 1024 * 1024) {
+          showStatus('La imagen no puede ser mayor a 10MB', 'error');
+          return;
+        }
+
+        selectedImageFile = file;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          imagePreview.src = reader.result;
+          imagePreviewContainer.style.display = 'block';
+          imageUploadButton.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
       }
     });
 
-    // Buscar GIFs usando el backend (Giphy o Tenor)
-    async function searchGifs(query = 'love') {
-      gifLoading.style.display = 'block';
-      gifResults.innerHTML = '';
-
-      try {
-        // Usar nuestro endpoint del backend que maneja Giphy y Tenor
-        const limit = 12;
-        const url = `${PAGE_DATA.baseUrl}/api/gifs/search?q=${encodeURIComponent(query)}&limit=${limit}&provider=giphy`;
-
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-
-        if (data.success && data.data && data.data.length > 0) {
-          gifResults.innerHTML = '';
-          data.data.forEach((gif) => {
-            const gifItem = document.createElement('div');
-            gifItem.className = 'gif-item';
-            gifItem.dataset.gifId = gif.id;
-            gifItem.dataset.gifUrl = gif.url;
-            
-            const img = document.createElement('img');
-            img.src = gif.previewUrl || gif.url; // Usar preview si está disponible
-            img.alt = gif.title || 'GIF';
-            img.loading = 'lazy';
-            img.style.width = '100%';
-            img.style.height = 'auto';
-            
-            gifItem.appendChild(img);
-            
-            gifItem.addEventListener('click', () => {
-              selectGif(gif.url, gif.id, gif.url);
-            });
-            
-            gifResults.appendChild(gifItem);
-          });
-        } else {
-          gifResults.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #666;">No se encontraron GIFs. Intenta con otra búsqueda.</div>';
-        }
-      } catch (error) {
-        console.error('Error buscando GIFs:', error);
-        gifResults.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #dc3545;">Error al cargar GIFs. Intenta de nuevo más tarde.</div>';
-      } finally {
-        gifLoading.style.display = 'none';
-      }
-    }
-
-    // Seleccionar GIF
-    function selectGif(gifUrl, gifId, fullUrl) {
-      selectedGifUrl = fullUrl;
-      selectedGifId = gifId;
-      selectedGifImg.src = gifUrl;
-      selectedGif.style.display = 'block';
-      gifSearch.style.display = 'none';
-      
-      // Remover selección anterior
-      document.querySelectorAll('.gif-item').forEach(item => {
-        item.classList.remove('selected');
-        if (item.dataset.gifId === gifId) {
-          item.classList.add('selected');
-        }
-      });
-    }
-
-    // Eliminar GIF seleccionado
-    removeGif.addEventListener('click', () => {
-      selectedGifUrl = null;
-      selectedGifId = null;
-      selectedGif.style.display = 'none';
-      document.querySelectorAll('.gif-item').forEach(item => {
-        item.classList.remove('selected');
-      });
-    });
-
-    // Buscar GIFs al hacer clic en el botón
-    gifSearchBtn.addEventListener('click', () => {
-      const query = gifSearchInput.value.trim() || 'love';
-      searchGifs(query);
-    });
-
-    // Buscar GIFs al presionar Enter
-    gifSearchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const query = gifSearchInput.value.trim() || 'love';
-        searchGifs(query);
+    // Eliminar imagen seleccionada
+    removeImage.addEventListener('click', () => {
+      selectedImageFile = null;
+      imagePreviewContainer.style.display = 'none';
+      imageUploadButton.style.display = 'block';
+      imageUpload.value = '';
+      if (imagePreview) {
+        imagePreview.src = '';
       }
     });
 
@@ -912,15 +980,20 @@
     // Inicializar vista según estado
     if (!PAGE_DATA.isPersonalized) {
       personalizationForm.classList.add('active');
+      // Mostrar modal de términos si la página no está personalizada
+      termsModal.style.display = 'flex';
     } else {
+      // Si ya está personalizada, ocultar el modal
+      termsModal.style.display = 'none';
+      termsAccepted = true;
       playerView.classList.add('active');
       updateLimitsInfo();
       updateHeaderTitle();
       
-      // Mostrar GIF si existe
-      if (PAGE_DATA.selectedGifUrl) {
-        displayGifImg.src = PAGE_DATA.selectedGifUrl;
-        displayGif.style.display = 'block';
+      // Mostrar imagen si existe
+      if (PAGE_DATA.imageUrl) {
+        displayImageImg.src = PAGE_DATA.imageUrl;
+        displayImage.style.display = 'block';
       }
     }
 
@@ -1112,6 +1185,13 @@
     personalizeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      // Verificar que se aceptaron los términos y es mayor de edad
+      if (!termsAccepted || !isAdult) {
+        showStatus('Debes aceptar los términos y condiciones, la política anti-bullying y confirmar que eres mayor de edad para continuar', 'error');
+        termsModal.style.display = 'flex';
+        return;
+      }
+      
       // Validar campos
       const senderName = document.getElementById('senderName').value.trim();
       const recipientName = document.getElementById('recipientName').value.trim();
@@ -1173,6 +1253,11 @@
       }
       
       formData.append('audio', audioBlob, `voice-message.${extension}`);
+      
+      // Agregar imagen si fue seleccionada
+      if (selectedImageFile) {
+        formData.append('image', selectedImageFile);
+      }
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creando...';
@@ -1222,11 +1307,11 @@
             descElement.textContent = data.data.description || data.data.writtenMessage;
           }
 
-          // Mostrar GIF si fue seleccionado
-          if (data.data.selectedGifUrl) {
-            displayGifImg.src = data.data.selectedGifUrl;
-            displayGif.style.display = 'block';
-            PAGE_DATA.selectedGifUrl = data.data.selectedGifUrl;
+          // Mostrar imagen si fue subida
+          if (data.data.imageUrl) {
+            PAGE_DATA.imageUrl = data.data.imageUrl;
+            displayImageImg.src = data.data.imageUrl;
+            displayImage.style.display = 'block';
           }
 
           // Cambiar a vista de reproducción

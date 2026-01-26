@@ -5,9 +5,10 @@ import fs from 'fs';
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads';
 const processedDir = process.env.PROCESSED_DIR || './processed';
+const imagesDir = process.env.IMAGES_DIR || './images';
 
 // Crear directorios si no existen
-[uploadDir, processedDir].forEach((dir) => {
+[uploadDir, processedDir, imagesDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -16,7 +17,12 @@ const processedDir = process.env.PROCESSED_DIR || './processed';
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    // Si es una imagen, guardarla en imagesDir
+    if (file.fieldname === 'image') {
+      cb(null, imagesDir);
+    } else {
+      cb(null, uploadDir);
+    }
   },
   filename: (req, file, cb) => {
     const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
@@ -26,6 +32,19 @@ const storage = multer.diskStorage({
 
 // Filtro de archivos - solo audio
 const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Si el campo es 'image', permitir imágenes
+  if (file.fieldname === 'image') {
+    const allowedImageMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    const allowedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    
+    if (allowedImageMimes.includes(file.mimetype) || allowedImageExtensions.includes(fileExtension)) {
+      cb(null, true);
+      return;
+    }
+  }
+  
+  // Para el campo 'audio', solo permitir audio
   const allowedMimes = [
     'audio/mpeg',
     'audio/mp3',
@@ -43,7 +62,6 @@ const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.
     'audio/3gp',
   ];
 
-  // También verificar por extensión si el mimetype no está en la lista
   const fileExtension = path.extname(file.originalname).toLowerCase();
   const allowedExtensions = ['.mp3', '.wav', '.ogg', '.webm', '.m4a', '.aac', '.flac', '.opus', '.3gp', '.3gpp'];
 

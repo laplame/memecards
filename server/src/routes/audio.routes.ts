@@ -102,12 +102,21 @@ router.get('/file/:filename', async (req: Request, res: Response, next: NextFunc
 router.get('/stream/:filename', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const filename = req.params.filename;
+    
+    // Verificar que el directorio existe
+    try {
+      await fs.access(processedDir);
+    } catch {
+      await fs.mkdir(processedDir, { recursive: true });
+    }
+    
     const filePath = path.join(processedDir, filename);
 
     try {
       await fs.access(filePath);
     } catch {
-      throw new AppError('Archivo procesado no encontrado', 404);
+      console.warn(`⚠️  Archivo de audio no encontrado: ${filename} en ${processedDir}`);
+      throw new AppError(`Archivo procesado no encontrado: ${filename}`, 404);
     }
 
     const stat = await fs.stat(filePath);

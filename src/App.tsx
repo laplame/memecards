@@ -6,8 +6,10 @@ import { CardDisplay } from './components/CardDisplay';
 import { Dashboard } from './components/Dashboard';
 import { StoresDashboard } from './components/StoresDashboard';
 import { StorePage } from './components/StorePage';
+import { TermsAndConditions } from './components/TermsAndConditions';
+import { AntiBullying } from './components/AntiBullying';
 
-type View = 'landing' | 'create' | 'success' | 'display' | 'dashboard' | 'stores-dashboard' | 'store';
+type View = 'landing' | 'create' | 'success' | 'display' | 'dashboard' | 'stores-dashboard' | 'store' | 'terms' | 'antibullying';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('landing');
@@ -15,16 +17,24 @@ function App() {
 
   useEffect(() => {
     const path = window.location.pathname;
-    const match = path.match(/\/card\/([A-Z0-9]{8})/);
+    const cardMatch = path.match(/\/card\/([A-Z0-9]{8})/);
+    const storeMatch = path.match(/^\/([a-f0-9]{24})$/); // MongoDB ObjectId
 
-    if (match) {
-      const code = match[1];
+    if (cardMatch) {
+      const code = cardMatch[1];
       setCardCode(code);
       setCurrentView('display');
+    } else if (storeMatch) {
+      setCurrentView('store');
+      // StorePage manejará el storeId desde la URL
     } else if (path === '/dashboard') {
       setCurrentView('dashboard');
     } else if (path === '/stores-dashboard' || path === '/admin/stores') {
       setCurrentView('stores-dashboard');
+    } else if (path === '/terminos') {
+      setCurrentView('terms');
+    } else if (path === '/antibullying') {
+      setCurrentView('antibullying');
     }
   }, []);
 
@@ -34,6 +44,7 @@ function App() {
 
   const handleBack = () => {
     setCurrentView('landing');
+    window.history.pushState({}, '', '/');
   };
 
   const handleSuccess = (code: string) => {
@@ -47,8 +58,12 @@ function App() {
     setCurrentView('landing');
   };
 
-  if (currentView === 'store' && storeId) {
-    return <StorePage storeId={storeId} />;
+  if (currentView === 'store') {
+    const path = window.location.pathname;
+    const storeMatch = path.match(/^\/([a-f0-9]{24})$/);
+    if (storeMatch) {
+      return <StorePage storeId={storeMatch[1]} />;
+    }
   }
 
   if (currentView === 'stores-dashboard') {
@@ -69,6 +84,14 @@ function App() {
 
   if (currentView === 'create') {
     return <CreateCardForm onBack={handleBack} onSuccess={handleSuccess} />;
+  }
+
+  if (currentView === 'terms') {
+    return <TermsAndConditions />;
+  }
+
+  if (currentView === 'antibullying') {
+    return <AntiBullying />;
   }
 
   return <LandingPage onCreateCard={handleCreateCard} />;

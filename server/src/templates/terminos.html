@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Términos y Condiciones - Tarjetas con Corazón</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #fce4ec 0%, #ffe0e6 100%);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4b5563;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-button:hover {
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 1.25rem;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      padding: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      .content-card {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #374151;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      list-style: disc;
+      list-style-position: inside;
+      margin-left: 1rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    section {
+      margin-bottom: 2rem;
+    }
+
+    .update-box {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 0.5rem;
+    }
+
+    .update-box p {
+      font-size: 0.875rem;
+      color: #991b1b;
+      margin: 0;
+    }
+
+    .update-box strong {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="javascript:history.back()" class="back-button">Volver</a>
+
+    <div class="content-card">
+      <h1>Términos y Condiciones</h1>
+      
+      <section>
+        <h2>1. Aceptación de los Términos</h2>
+        <p>
+          Al acceder y utilizar este servicio de creación de tarjetas digitales, aceptas cumplir con estos términos y condiciones. 
+          Si no estás de acuerdo con alguna parte de estos términos, no debes utilizar el servicio.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Uso del Servicio</h2>
+        <p>
+          El servicio permite crear tarjetas digitales con mensajes de voz y contenido personalizado. 
+          Te comprometes a utilizar el servicio de manera responsable y legal.
+        </p>
+      </section>
+
+      <section>
+        <h2>3. Contenido del Usuario</h2>
+        <p>
+          Eres responsable de todo el contenido que subas, incluyendo mensajes de voz, imágenes y texto. 
+          No debes subir contenido que:
+        </p>
+        <ul>
+          <li>Sea ofensivo, discriminatorio o promueva el acoso</li>
+          <li>Viole derechos de propiedad intelectual</li>
+          <li>Contenga información personal de terceros sin consentimiento</li>
+          <li>Sea ilegal o promueva actividades ilegales</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>4. Política Anti-Bullying</h2>
+        <p>
+          Nos comprometemos a mantener un ambiente seguro y respetuoso. Cualquier contenido que promueva 
+          el acoso, la intimidación o el daño será eliminado inmediatamente y puede resultar en la prohibición 
+          permanente del servicio.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Limitación de Responsabilidad</h2>
+        <p>
+          El servicio se proporciona "tal cual" sin garantías. No nos hacemos responsables por la pérdida 
+          de datos, interrupciones del servicio o cualquier daño derivado del uso del servicio.
+        </p>
+      </section>
+
+      <section>
+        <h2>6. Modificaciones</h2>
+        <p>
+          Nos reservamos el derecho de modificar estos términos en cualquier momento. 
+          Los cambios entrarán en vigor al publicarse en esta página.
+        </p>
+      </section>
+
+      <div class="update-box">
+        <p>
+          <strong>Última actualización:</strong> <span id="updateDate"></span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mostrar fecha de actualización
+    const updateDate = new Date().toLocaleDateString('es-ES', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    document.getElementById('updateDate').textContent = updateDate;
+  </script>
+</body>
+</html>

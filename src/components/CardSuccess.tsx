@@ -1,4 +1,4 @@
-import { CheckCircle, Download, Copy, Check } from 'lucide-react';
+import { CheckCircle, Download, Copy, Check, X, Save, DollarSign } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { getCardUrl } from '../utils/cardCode';
 
@@ -10,6 +10,8 @@ interface CardSuccessProps {
 export function CardSuccess({ code, onCreateAnother }: CardSuccessProps) {
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [showSaveOffer, setShowSaveOffer] = useState(true);
+  const [saving, setSaving] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -59,6 +61,21 @@ export function CardSuccess({ code, onCreateAnother }: CardSuccessProps) {
     link.click();
   };
 
+  const handleSaveCard = async () => {
+    setSaving(true);
+    // Aquí iría la lógica de pago (Stripe, PayPal, etc.)
+    // Por ahora solo simulamos el proceso
+    setTimeout(() => {
+      alert('Redirigiendo al pago... (Funcionalidad de pago pendiente de implementar)');
+      setSaving(false);
+      setShowSaveOffer(false);
+    }, 1000);
+  };
+
+  const handleDismissOffer = () => {
+    setShowSaveOffer(false);
+  };
+
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-fixed py-8"
@@ -78,6 +95,56 @@ export function CardSuccess({ code, onCreateAnother }: CardSuccessProps) {
           </div>
 
           <div className="p-8 space-y-6">
+            {/* Oferta de Guardar Tarjeta */}
+            {showSaveOffer && (
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-xl p-6 relative">
+                <button
+                  onClick={handleDismissOffer}
+                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="flex items-start space-x-4">
+                  <div className="bg-yellow-100 p-3 rounded-full">
+                    <DollarSign className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">
+                      ¿Quieres guardar esta tarjeta por 1 año?
+                    </h3>
+                    <p className="text-sm text-gray-700 mb-4">
+                      Por solo <span className="font-bold text-yellow-600 text-lg">$1 USD</span>, tu tarjeta estará disponible durante todo un año sin límite de reproducciones.
+                    </p>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={handleSaveCard}
+                        disabled={saving}
+                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                      >
+                        {saving ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Procesando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-5 h-5" />
+                            <span>Guardar por $1 USD</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={handleDismissOffer}
+                        className="px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors"
+                      >
+                        Ahora no
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="text-center">
               <p className="text-lg text-gray-700 mb-2">
                 Tu tarjeta ha sido creada exitosamente
