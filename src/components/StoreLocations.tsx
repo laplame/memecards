@@ -1,18 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Phone, Clock, ExternalLink, Navigation } from 'lucide-react';
-import { storeLocations, type StoreLocation } from '../data/storeLocations';
 
-const stores = storeLocations;
+interface StoreLocation {
+  _id: string;
+  name: string;
+  address: string;
+  phone?: string;
+  hours?: string;
+  latitude: number;
+  longitude: number;
+  city: string;
+  state?: string;
+  country?: string;
+}
 
 export function StoreLocations() {
   const [selectedStore, setSelectedStore] = useState<StoreLocation | null>(null);
+  const [stores, setStores] = useState<StoreLocation[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const getGoogleMapsUrl = (store: StoreLocation) => {
-    return `https://www.google.com/maps?q=${store.latitude},${store.longitude}`;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+  useEffect(() => {
+    loadStores();
+  }, []);
+
+  const loadStores = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${backendUrl}/api/stores?isActive=true`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setStores(data.data);
+      }
+    } catch (error) {
+      console.error('Error loading stores:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getGoogleMapsDirections = (store: StoreLocation) => {
-    return `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
+  const getGoogleMapsUrl = (lat: number, lng: number) => {
+    return `https://www.google.com/maps?q=${lat},${lng}`;
+  };
+
+  const getGoogleMapsDirections = (lat: number, lng: number) => {
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   };
 
 
@@ -31,17 +65,27 @@ export function StoreLocations() {
       <div className="grid md:grid-cols-2 gap-0">
         {/* Lista de Tiendas */}
         <div className="p-6 overflow-y-auto max-h-[600px]">
-          <div className="space-y-4">
-            {stores.map((store) => (
-              <div
-                key={store.id}
-                onClick={() => setSelectedStore(store)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  selectedStore?.id === store.id
-                    ? 'border-red-500 bg-red-50 shadow-md'
-                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                }`}
-              >
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Cargando tiendas...</p>
+            </div>
+          ) : stores.length === 0 ? (
+            <div className="text-center py-12">
+              <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 text-lg">No hay tiendas disponibles</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {stores.map((store) => (
+                <div
+                  key={store._id}
+                  onClick={() => setSelectedStore(store)}
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    selectedStore?._id === store._id
+                      ? 'border-red-500 bg-red-50 shadow-md'
+                      : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                  }`}
+                >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="font-bold text-lg text-gray-800 mb-1">
@@ -72,31 +116,32 @@ export function StoreLocations() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-3 flex space-x-2">
-                  <a
-                    href={getGoogleMapsUrl(store)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 font-medium"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>Ver en Maps</span>
-                  </a>
-                  <a
-                    href={getGoogleMapsDirections(store)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    <Navigation className="w-4 h-4" />
-                    <span>Ruta</span>
-                  </a>
+                  <div className="mt-3 flex space-x-2">
+                    <a
+                      href={getGoogleMapsUrl(store.latitude, store.longitude)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 font-medium"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Ver en Maps</span>
+                    </a>
+                    <a
+                      href={getGoogleMapsDirections(store.latitude, store.longitude)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      <Navigation className="w-4 h-4" />
+                      <span>Ruta</span>
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Mapa */}
@@ -112,29 +157,29 @@ export function StoreLocations() {
                 {/* Mapa embebido de Google Maps */}
                 {/* Mapa interactivo - placeholder que abre Google Maps */}
                 <div className="rounded-lg overflow-hidden shadow-lg mb-4 bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-200">
-                  <a
-                    href={getGoogleMapsUrl(selectedStore)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full h-[300px] relative group"
-                  >
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                      <MapPin className="w-16 h-16 text-red-500 mb-4 group-hover:scale-110 transition-transform" />
-                      <h4 className="text-xl font-bold text-gray-800 mb-2">{selectedStore.name}</h4>
-                      <p className="text-sm text-gray-600 text-center mb-4">{selectedStore.address}</p>
-                      <div className="bg-red-500 text-white px-6 py-3 rounded-lg font-medium group-hover:bg-red-600 transition-colors">
-                        Ver en Google Maps →
+                    <a
+                      href={getGoogleMapsUrl(selectedStore.latitude, selectedStore.longitude)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full h-[300px] relative group"
+                    >
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                        <MapPin className="w-16 h-16 text-red-500 mb-4 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-xl font-bold text-gray-800 mb-2">{selectedStore.name}</h4>
+                        <p className="text-sm text-gray-600 text-center mb-4">{selectedStore.address}</p>
+                        <div className="bg-red-500 text-white px-6 py-3 rounded-lg font-medium group-hover:bg-red-600 transition-colors">
+                          Ver en Google Maps →
+                        </div>
                       </div>
-                    </div>
-                    <div className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg">
-                      <ExternalLink className="w-5 h-5 text-red-500" />
-                    </div>
-                  </a>
+                      <div className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg">
+                        <ExternalLink className="w-5 h-5 text-red-500" />
+                      </div>
+                    </a>
                 </div>
 
                 <div className="flex space-x-2">
                   <a
-                    href={getGoogleMapsUrl(selectedStore)}
+                    href={getGoogleMapsUrl(selectedStore.latitude, selectedStore.longitude)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
@@ -143,7 +188,7 @@ export function StoreLocations() {
                     <span>Abrir en Google Maps</span>
                   </a>
                   <a
-                    href={getGoogleMapsDirections(selectedStore)}
+                    href={getGoogleMapsDirections(selectedStore.latitude, selectedStore.longitude)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"

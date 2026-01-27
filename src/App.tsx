@@ -58,6 +58,12 @@ function App() {
     setCurrentView('landing');
   };
 
+  const handleSearchCard = (code: string) => {
+    setCardCode(code);
+    setCurrentView('display');
+    window.history.pushState({}, '', `/card/${code}`);
+  };
+
   if (currentView === 'store') {
     const path = window.location.pathname;
     const storeMatch = path.match(/^\/([a-f0-9]{24})$/);
@@ -94,7 +100,7 @@ function App() {
     return <AntiBullying />;
   }
 
-  return <LandingPage onCreateCard={handleCreateCard} />;
+  return <LandingPage onCreateCard={handleCreateCard} onSearchCard={handleSearchCard} />;
 }
 
 export default App;

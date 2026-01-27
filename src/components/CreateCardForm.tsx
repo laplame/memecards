@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle } from 'lucide-react';
+import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle, Lock, Search, Download } from 'lucide-react';
 import { CardSendingAnimation } from './CardSendingAnimation';
 
 interface CreateCardFormProps {
@@ -23,7 +23,14 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
   const [showTermsModal, setShowTermsModal] = useState(true);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
+  const [enablePin, setEnablePin] = useState(false);
+  const [cardPin, setCardPin] = useState('');
   const [showSendingAnimation, setShowSendingAnimation] = useState(false);
+  const [showUnsplashSearch, setShowUnsplashSearch] = useState(false);
+  const [unsplashQuery, setUnsplashQuery] = useState('');
+  const [unsplashResults, setUnsplashResults] = useState<any[]>([]);
+  const [searchingUnsplash, setSearchingUnsplash] = useState(false);
+  const [selectedUnsplashImage, setSelectedUnsplashImage] = useState<string | null>(null);
   const [cardData, setCardData] = useState<{
     code: string;
     imageUrl?: string;
@@ -69,11 +76,49 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
         }
       };
 
+      let recordingStartTime = Date.now();
+      
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
+        
+        // Verificar duración del audio
+        const audio = new Audio(url);
+        audio.addEventListener('loadedmetadata', () => {
+          const audioDuration = audio.duration;
+          if (audioDuration > 60) {
+            alert('El audio no puede ser mayor a 1 minuto. Por favor, graba un mensaje más corto.');
+            setAudioBlob(null);
+            setAudioUrl(null);
+            setDuration(0);
+            setCurrentTime(0);
+            URL.revokeObjectURL(url);
+            stream.getTracks().forEach(track => track.stop());
+            return;
+          }
+          setDuration(audioDuration);
+          setAudioBlob(blob);
+        });
+        
+        audio.addEventListener('error', () => {
+          // Si no se puede cargar, intentar con el blob directamente
+          // Pero aún así validar la duración aproximada
+          const recordingDuration = (Date.now() - recordingStartTime) / 1000;
+          if (recordingDuration > 60) {
+            alert('El audio no puede ser mayor a 1 minuto. Por favor, graba un mensaje más corto.');
+            setAudioBlob(null);
+            setAudioUrl(null);
+            setDuration(0);
+            setCurrentTime(0);
+            URL.revokeObjectURL(url);
+            stream.getTracks().forEach(track => track.stop());
+            return;
+          }
+          setDuration(recordingDuration);
+          setAudioBlob(blob);
+        });
+        
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -151,8 +196,60 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
+    setSelectedUnsplashImage(null);
     if (imageInputRef.current) {
       imageInputRef.current.value = '';
+    }
+  };
+
+  const handleSearchUnsplash = async () => {
+    if (!unsplashQuery.trim()) {
+      alert('Por favor ingresa un término de búsqueda');
+      return;
+    }
+
+    setSearchingUnsplash(true);
+    try {
+      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const response = await fetch(`${backendUrlEnv}/api/unsplash/search?query=${encodeURIComponent(unsplashQuery)}&perPage=20`);
+      
+      if (!response.ok) {
+        throw new Error('Error al buscar imágenes');
+      }
+
+      const data = await response.json();
+      setUnsplashResults(data.data?.results || []);
+    } catch (error: any) {
+      console.error('Error al buscar imágenes:', error);
+      alert('Error al buscar imágenes. Por favor intenta de nuevo.');
+    } finally {
+      setSearchingUnsplash(false);
+    }
+  };
+
+  const handleSelectUnsplashImage = async (imageUrl: string) => {
+    try {
+      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const response = await fetch(`${backendUrlEnv}/api/unsplash/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar imagen');
+      }
+
+      const data = await response.json();
+      setSelectedUnsplashImage(data.data.url);
+      setImagePreview(data.data.url);
+      setSelectedImage(null); // Limpiar imagen subida si había una
+      setShowUnsplashSearch(false);
+    } catch (error: any) {
+      console.error('Error al descargar imagen:', error);
+      alert('Error al descargar imagen. Por favor intenta de nuevo.');
     }
   };
 
@@ -184,6 +281,12 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
       return;
     }
 
+    // Validar duración del audio (máximo 1 minuto)
+    if (duration > 60) {
+      alert('El audio no puede ser mayor a 1 minuto. Por favor, graba un mensaje más corto.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -197,6 +300,14 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
       formData.append('writtenMessage', message);
       if (selectedImage) {
         formData.append('image', selectedImage);
+      } else if (selectedUnsplashImage) {
+        // Si hay una imagen de Unsplash, descargarla y enviarla
+        const response = await fetch(selectedUnsplashImage);
+        const blob = await response.blob();
+        formData.append('image', blob, 'unsplash-image.jpg');
+      }
+      if (enablePin && cardPin) {
+        formData.append('pin', cardPin);
       }
 
       const backendResponse = await fetch(`${backendUrlEnv}/api/pages/create`, {
@@ -451,28 +562,106 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
               </label>
               <div className="space-y-4">
                 {!imagePreview ? (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors">
-                    <input
-                      ref={imageInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="cursor-pointer flex flex-col items-center space-y-2"
-                    >
-                      <Image className="w-12 h-12 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        Haz clic para seleccionar una imagen
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        JPG, PNG, GIF o WEBP (máx. 10MB)
-                      </span>
-                    </label>
-                  </div>
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors">
+                        <input
+                          ref={imageInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="cursor-pointer flex flex-col items-center space-y-2"
+                        >
+                          <Image className="w-10 h-10 text-gray-400" />
+                          <span className="text-sm text-gray-600">
+                            Subir desde cámara
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            JPG, PNG, GIF (máx. 10MB)
+                          </span>
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowUnsplashSearch(!showUnsplashSearch)}
+                        className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors bg-purple-50"
+                      >
+                        <div className="flex flex-col items-center space-y-2">
+                          <Search className="w-10 h-10 text-purple-400" />
+                          <span className="text-sm text-gray-600">
+                            Buscar en Unsplash
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            Imágenes gratuitas
+                          </span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {showUnsplashSearch && (
+                      <div className="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
+                        <div className="flex gap-2 mb-4">
+                          <input
+                            type="text"
+                            value={unsplashQuery}
+                            onChange={(e) => setUnsplashQuery(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSearchUnsplash();
+                              }
+                            }}
+                            placeholder="Buscar imágenes (ej: love, valentine, heart)"
+                            className="flex-1 px-4 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleSearchUnsplash}
+                            disabled={searchingUnsplash}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          >
+                            {searchingUnsplash ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Buscando...
+                              </>
+                            ) : (
+                              <>
+                                <Search className="w-4 h-4" />
+                                Buscar
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        {unsplashResults.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                            {unsplashResults.map((img: any) => (
+                              <button
+                                key={img.id}
+                                type="button"
+                                onClick={() => handleSelectUnsplashImage(img.urls.regular)}
+                                className="relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-purple-500 transition-all"
+                              >
+                                <img
+                                  src={img.urls.thumb}
+                                  alt={img.alt_description || 'Unsplash image'}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all flex items-center justify-center">
+                                  <Download className="w-6 h-6 text-white opacity-0 hover:opacity-100 transition-opacity" />
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="relative">
                     <img
@@ -487,6 +676,11 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
                     >
                       <X className="w-4 h-4" />
                     </button>
+                    {selectedUnsplashImage && (
+                      <div className="absolute bottom-2 left-2 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                        Desde Unsplash
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -635,9 +829,61 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
               </div>
             </div>
 
+            {/* Opción de PIN de Privacidad */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-5 border-2 border-purple-200">
+              <div className="flex items-start space-x-3 mb-4">
+                <Lock className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={enablePin}
+                      onChange={(e) => {
+                        setEnablePin(e.target.checked);
+                        if (!e.target.checked) {
+                          setCardPin('');
+                        }
+                      }}
+                      className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <span className="font-semibold text-gray-800">
+                      Agregar PIN de privacidad (opcional)
+                    </span>
+                  </label>
+                  <p className="text-sm text-gray-600 mt-1 ml-7">
+                    Protege tu tarjeta con un código de 4 dígitos. Solo quien tenga el código podrá verla.
+                  </p>
+                </div>
+              </div>
+
+              {enablePin && (
+                <div className="ml-7 mt-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Código PIN (4 dígitos) *
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={cardPin}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                      setCardPin(value);
+                    }}
+                    placeholder="1234"
+                    className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center text-2xl font-mono font-bold tracking-widest"
+                    required={enablePin}
+                  />
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Comparte este código solo con quien quieras que vea la tarjeta
+                  </p>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
-              disabled={isSubmitting || !acceptedTerms || !isAdult}
+              disabled={isSubmitting || !acceptedTerms || !isAdult || (enablePin && cardPin.length !== 4)}
               className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-4 px-8 rounded-full text-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
             >
               {isSubmitting ? (

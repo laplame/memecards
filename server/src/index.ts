@@ -9,6 +9,7 @@ import { pageRouter } from './routes/page.routes.js';
 import { publicPageRouter } from './routes/publicPage.routes.js';
 import { storeLocationRouter } from './routes/storeLocation.routes.js';
 import { imageRouter } from './routes/image.routes.js';
+import { unsplashRouter } from './routes/unsplash.routes.js';
 import { staticPagesRouter } from './routes/staticPages.routes.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -51,6 +52,7 @@ app.use('/api/pages', pageRouter); // API de páginas (POST /api/pages/create, G
 app.use('/page', publicPageRouter); // Páginas públicas (GET /page/:code)
 app.use('/api/stores', storeLocationRouter); // API de tiendas (GET /api/stores/:id, etc.)
 app.use('/api/images', imageRouter); // API de imágenes (GET /api/images/:filename)
+app.use('/api/unsplash', unsplashRouter); // API de Unsplash (GET /api/unsplash/search, POST /api/unsplash/download)
 app.use('/', staticPagesRouter); // Páginas estáticas (GET /terminos, GET /antibullying)
 
 // Health check (legacy, redirige a /api/health)

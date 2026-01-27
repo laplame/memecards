@@ -589,7 +589,47 @@
     </div>
   </div>
 
-  <div class="container">
+  <!-- Bloqueador de PIN (si tiene PIN) -->
+  <div id="pinLockContainer" style="display: none; position: fixed; inset: 0; z-index: 2000; background: linear-gradient(135deg, #fce4ec 0%, #ffe0e6 100%); display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 25px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); padding: 40px; max-width: 400px; width: 100%; text-align: center;">
+      <div style="margin-bottom: 24px;">
+        <div style="background: #fef2f2; border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <span style="font-size: 40px;">🔒</span>
+        </div>
+        <h2 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">Tarjeta Protegida</h2>
+        <p style="color: #6b7280; font-size: 14px;">Ingresa el código PIN de 4 dígitos para ver esta tarjeta</p>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="pinInput0" maxlength="1" inputmode="numeric" style="width: 60px; height: 60px; text-align: center; font-size: 24px; font-weight: 700; border: 2px solid #d1d5db; border-radius: 12px; background: #f9fafb; font-family: monospace;" />
+          <input type="text" id="pinInput1" maxlength="1" inputmode="numeric" style="width: 60px; height: 60px; text-align: center; font-size: 24px; font-weight: 700; border: 2px solid #d1d5db; border-radius: 12px; background: #f9fafb; font-family: monospace;" />
+          <input type="text" id="pinInput2" maxlength="1" inputmode="numeric" style="width: 60px; height: 60px; text-align: center; font-size: 24px; font-weight: 700; border: 2px solid #d1d5db; border-radius: 12px; background: #f9fafb; font-family: monospace;" />
+          <input type="text" id="pinInput3" maxlength="1" inputmode="numeric" style="width: 60px; height: 60px; text-align: center; font-size: 24px; font-weight: 700; border: 2px solid #d1d5db; border-radius: 12px; background: #f9fafb; font-family: monospace;" />
+        </div>
+        <div id="pinError" style="display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-top: 12px;">
+          <p style="color: #991b1b; font-size: 14px; font-weight: 600; margin: 0;">Código incorrecto. Intenta de nuevo.</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+        <button type="button" class="pin-num-btn" data-num="1" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">1</button>
+        <button type="button" class="pin-num-btn" data-num="2" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">2</button>
+        <button type="button" class="pin-num-btn" data-num="3" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">3</button>
+        <button type="button" class="pin-num-btn" data-num="4" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">4</button>
+        <button type="button" class="pin-num-btn" data-num="5" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">5</button>
+        <button type="button" class="pin-num-btn" data-num="6" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">6</button>
+        <button type="button" class="pin-num-btn" data-num="7" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">7</button>
+        <button type="button" class="pin-num-btn" data-num="8" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">8</button>
+        <button type="button" class="pin-num-btn" data-num="9" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">9</button>
+        <button type="button" id="pinClearBtn" style="padding: 16px; background: #fee2e2; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; color: #991b1b; transition: all 0.2s;">C</button>
+        <button type="button" class="pin-num-btn" data-num="0" style="padding: 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s;">0</button>
+        <button type="button" id="pinBackBtn" style="padding: 16px; background: #fee2e2; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; color: #991b1b; transition: all 0.2s;">←</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="mainContainer">
     <!-- Estado de Personalización -->
     <div class="personalization-form" id="personalizationForm">
       <div class="form-container">
@@ -780,6 +820,8 @@
       maxPlays: parseInt('{{MAX_PLAYS}}') || 5,
       expirationDate: '{{EXPIRATION_DATE}}' ? new Date('{{EXPIRATION_DATE}}') : null,
       imageUrl: '{{IMAGE_URL}}' || null,
+      hasPin: '{{HAS_PIN}}' === 'true',
+      correctPin: '{{PIN}}' || '',
     };
 
     const displayImage = document.getElementById('displayImage');
@@ -811,8 +853,23 @@
     const termsModal = document.getElementById('termsModal');
     const acceptTermsBtn = document.getElementById('acceptTermsBtn');
     const isAdultCheckbox = document.getElementById('isAdultCheckbox');
+    const pinLockContainer = document.getElementById('pinLockContainer');
+    const mainContainer = document.getElementById('mainContainer');
     let termsAccepted = false;
     let isAdult = false;
+    let pinAttempts = 0;
+
+    // Elementos del PIN
+    const pinInputs = [
+      document.getElementById('pinInput0'),
+      document.getElementById('pinInput1'),
+      document.getElementById('pinInput2'),
+      document.getElementById('pinInput3'),
+    ];
+    const pinError = document.getElementById('pinError');
+    const pinNumBtns = document.querySelectorAll('.pin-num-btn');
+    const pinClearBtn = document.getElementById('pinClearBtn');
+    const pinBackBtn = document.getElementById('pinBackBtn');
 
     // Manejar checkbox de mayor de edad
     isAdultCheckbox.addEventListener('change', (e) => {
@@ -975,6 +1032,126 @@
       } else {
         headerTitle.textContent = 'Crea tu Tarjeta';
       }
+    }
+
+    // Manejar PIN si la página tiene uno
+    if (PAGE_DATA.hasPin && PAGE_DATA.correctPin) {
+      if (pinLockContainer) pinLockContainer.style.display = 'flex';
+      if (mainContainer) mainContainer.style.display = 'none';
+
+      // Focus en el primer input
+      if (pinInputs[0]) pinInputs[0].focus();
+
+      // Manejar entrada de teclado
+      pinInputs.forEach((input, index) => {
+        if (!input) return;
+        input.addEventListener('input', (e) => {
+          const value = e.target.value.replace(/[^0-9]/g, '');
+          e.target.value = value;
+          if (value && index < 3 && pinInputs[index + 1]) {
+            pinInputs[index + 1].focus();
+          }
+          if (value && index === 3) {
+            verifyPin();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && index > 0 && pinInputs[index - 1]) {
+            pinInputs[index - 1].focus();
+          }
+        });
+
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasted = e.clipboardData.getData('text').slice(0, 4);
+          if (/^\d{4}$/.test(pasted)) {
+            pasted.split('').forEach((digit, i) => {
+              if (pinInputs[i]) {
+                pinInputs[i].value = digit;
+              }
+            });
+            verifyPin();
+          }
+        });
+      });
+
+      // Teclado numérico
+      pinNumBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const num = btn.getAttribute('data-num');
+          const emptyIndex = pinInputs.findIndex(input => input && !input.value);
+          if (emptyIndex !== -1 && pinInputs[emptyIndex]) {
+            pinInputs[emptyIndex].value = num;
+            pinInputs[emptyIndex].focus();
+            if (emptyIndex < 3 && pinInputs[emptyIndex + 1]) {
+              pinInputs[emptyIndex + 1].focus();
+            } else {
+              verifyPin();
+            }
+          }
+        });
+      });
+
+      if (pinClearBtn) {
+        pinClearBtn.addEventListener('click', () => {
+          pinInputs.forEach(input => {
+            if (input) {
+              input.value = '';
+              input.style.borderColor = '#d1d5db';
+              input.style.background = '#f9fafb';
+            }
+          });
+          if (pinError) pinError.style.display = 'none';
+          if (pinInputs[0]) pinInputs[0].focus();
+        });
+      }
+
+      if (pinBackBtn) {
+        pinBackBtn.addEventListener('click', () => {
+          for (let i = 3; i >= 0; i--) {
+            if (pinInputs[i] && pinInputs[i].value) {
+              pinInputs[i].value = '';
+              pinInputs[i].focus();
+              break;
+            }
+          }
+          if (pinError) pinError.style.display = 'none';
+        });
+      }
+
+      function verifyPin() {
+        const enteredPin = pinInputs.map(input => input ? input.value : '').join('');
+        if (enteredPin.length === 4) {
+          if (enteredPin === PAGE_DATA.correctPin) {
+            // PIN correcto, mostrar contenido
+            if (pinLockContainer) pinLockContainer.style.display = 'none';
+            if (mainContainer) mainContainer.style.display = 'block';
+          } else {
+            // PIN incorrecto
+            pinAttempts++;
+            if (pinError) pinError.style.display = 'block';
+            pinInputs.forEach(input => {
+              if (input) {
+                input.value = '';
+                input.style.borderColor = '#ef4444';
+                input.style.background = '#fef2f2';
+                setTimeout(() => {
+                  input.style.borderColor = '#d1d5db';
+                  input.style.background = '#f9fafb';
+                }, 500);
+              }
+            });
+            setTimeout(() => {
+              if (pinInputs[0]) pinInputs[0].focus();
+            }, 100);
+          }
+        }
+      }
+    } else {
+      // No tiene PIN, mostrar contenido directamente
+      if (pinLockContainer) pinLockContainer.style.display = 'none';
+      if (mainContainer) mainContainer.style.display = 'block';
     }
 
     // Inicializar vista según estado

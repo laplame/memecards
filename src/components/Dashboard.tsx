@@ -12,9 +12,13 @@ import {
   MapPin,
   Phone,
   Clock,
-  Navigation
+  Navigation,
+  Plus,
+  FileText,
+  X
 } from 'lucide-react';
 import QRCode from 'qrcode';
+import { PinLock } from './PinLock';
 
 interface AudioPage {
   id: string;
@@ -43,6 +47,7 @@ interface StoreData {
 }
 
 export function Dashboard() {
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [pages, setPages] = useState<AudioPage[]>([]);
   const [stores, setStores] = useState<StoreData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,13 +57,22 @@ export function Dashboard() {
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const canvasRefs = useRef<Record<string, HTMLCanvasElement>>({});
+  const [showCreateCardsForm, setShowCreateCardsForm] = useState(false);
+  const [creatingCards, setCreatingCards] = useState(false);
+  const [createFormData, setCreateFormData] = useState({
+    storeName: '',
+    serverId: '',
+    quantity: 10,
+  });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    fetchPages();
-    fetchStores();
-  }, []);
+    if (isUnlocked) {
+      fetchPages();
+      fetchStores();
+    }
+  }, [isUnlocked]);
 
   useEffect(() => {
     // Generar QR codes para todas las páginas
@@ -201,6 +215,54 @@ export function Dashboard() {
     }
   };
 
+  const handleCreateCards = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!createFormData.storeName || !createFormData.serverId) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    if (!confirm(`¿Estás seguro de crear ${createFormData.quantity} tarjetas para ${createFormData.storeName}?`)) {
+      return;
+    }
+
+    try {
+      setCreatingCards(true);
+      const response = await fetch(`${backendUrl}/api/pages/bulk-create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storeName: createFormData.storeName,
+          serverId: createFormData.serverId,
+          quantity: createFormData.quantity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`¡${data.data.created} tarjetas creadas exitosamente!`);
+        setShowCreateCardsForm(false);
+        setCreateFormData({
+          storeName: '',
+          serverId: '',
+          quantity: 10,
+        });
+        fetchPages();
+      } else {
+        alert(data.error?.message || 'Error al crear las tarjetas');
+      }
+    } catch (error) {
+      console.error('Error creating cards:', error);
+      alert('Error al crear las tarjetas');
+    } finally {
+      setCreatingCards(false);
+    }
+  };
+
   const filteredPages = pages.filter((page) =>
     page.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
     page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -214,6 +276,17 @@ export function Dashboard() {
   );
 
   // No mostrar loading global, solo en las secciones específicas
+
+  if (!isUnlocked) {
+    return (
+      <PinLock
+        correctPin="8044"
+        onUnlock={() => setIsUnlocked(true)}
+        title="Dashboard"
+        message="Ingresa el código PIN para acceder al dashboard"
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 py-8">
@@ -238,9 +311,27 @@ export function Dashboard() {
                     )}
                   </>
                 ) : (
-                  `${stores.length} tiendas`
+                  `Tiendas (${stores.length})`
                 )}
               </div>
+              {activeTab === 'pages' && (
+                <button
+                  onClick={() => setShowCreateCardsForm(true)}
+                  className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Crear Tarjetas</span>
+                </button>
+              )}
+              {activeTab === 'stores' && (
+                <a
+                  href="/stores-dashboard"
+                  className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Nueva Tienda</span>
+                </a>
+              )}
               <button
                 onClick={activeTab === 'pages' ? fetchPages : fetchStores}
                 disabled={loading || storesLoading}
@@ -276,6 +367,108 @@ export function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Formulario de Creación de Tarjetas */}
+        {showCreateCardsForm && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                <FileText className="w-6 h-6 text-green-500" />
+                <span>Crear Tarjetas en Masa</span>
+              </h2>
+              <button
+                onClick={() => setShowCreateCardsForm(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateCards} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre de la Papelería *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={createFormData.storeName}
+                    onChange={(e) => setCreateFormData({ ...createFormData, storeName: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Ej: Papelería El Corazón"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ID del Servidor *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={createFormData.serverId}
+                    onChange={(e) => setCreateFormData({ ...createFormData, serverId: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Ej: SERVER-001"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cantidad de Tarjetas *
+                  </label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[10, 50, 100, 1000].map((qty) => (
+                      <button
+                        key={qty}
+                        type="button"
+                        onClick={() => setCreateFormData({ ...createFormData, quantity: qty })}
+                        className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                          createFormData.quantity === qty
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg transform scale-105'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {qty}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Resumen:</strong> Se crearán <strong>{createFormData.quantity} tarjetas</strong> para{' '}
+                  <strong>{createFormData.storeName || '[Nombre de papelería]'}</strong> con ID{' '}
+                  <strong>{createFormData.serverId || '[ID del servidor]'}</strong>
+                </p>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateCardsForm(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingCards}
+                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {creatingCards ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Creando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4" />
+                      <span>Crear {createFormData.quantity} Tarjetas</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Search */}
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
@@ -434,9 +627,18 @@ export function Dashboard() {
           ) : filteredStores.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
               <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 text-lg mb-6">
                 {searchTerm ? 'No se encontraron tiendas' : 'No hay tiendas disponibles'}
               </p>
+              {!searchTerm && stores.length === 0 && (
+                <a
+                  href="/stores-dashboard"
+                  className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Crear Primera Tienda</span>
+                </a>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

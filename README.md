@@ -4,13 +4,18 @@ Una aplicación full-stack para crear tarjetas digitales personalizadas con mens
 
 ## ✨ Características
 
-- 🎤 **Grabación de Voz**: Graba mensajes de voz personalizados directamente desde el navegador
-- 🖼️ **Subida de Imágenes**: Personaliza tus tarjetas con imágenes propias
+- 🎤 **Grabación de Voz**: Graba mensajes de voz personalizados directamente desde el navegador (máximo 1 minuto)
+- 🖼️ **Subida de Imágenes**: Personaliza tus tarjetas con imágenes propias o busca en Unsplash
+- 🖼️ **Optimización de Imágenes**: Redimensionado y compresión automática para mejor rendimiento
+- 🔍 **Búsqueda en Unsplash**: Integración con Unsplash para encontrar imágenes gratuitas de alta calidad
+- 🔒 **PIN de Privacidad**: Protege tus tarjetas con un código PIN opcional de 4 dígitos
 - 📱 **Códigos QR Únicos**: Cada tarjeta genera un código QR único para compartir
 - 🎨 **Animaciones**: Animaciones CSS personalizadas para una experiencia visual atractiva
 - 🛡️ **Políticas de Seguridad**: Términos y condiciones y política anti-bullying integradas
-- 📍 **Ubicaciones de Tiendas**: Sistema de gestión de tiendas físicas con MongoDB
+- 📍 **Ubicaciones de Tiendas**: Sistema de gestión de tiendas físicas con MongoDB y geolocalización GPS
 - 🎵 **Procesamiento de Audio**: Optimización automática de audio con FFmpeg
+- 🎉 **Navegación de Festividades**: Soporte para múltiples festividades (San Valentín, Día de la Madre, etc.)
+- 🔍 **Búsqueda de Tarjetas**: Busca tarjetas por código desde la página principal
 
 ## 🚀 Inicio Rápido
 
@@ -55,7 +60,10 @@ Una aplicación full-stack para crear tarjetas digitales personalizadas con mens
    IMAGES_DIR=./images
    PAGES_DIR=./pages-data
    MONGODB_ATLAS=tu_connection_string_mongodb
+   UNSPLASH_ACCESS_KEY=tu_clave_de_unsplash
    ```
+   
+   **Nota**: Para obtener una clave de Unsplash, regístrate en [Unsplash Developers](https://unsplash.com/developers) y crea una aplicación.
 
 5. **Iniciar el servidor backend**
    ```bash
@@ -101,8 +109,9 @@ memecards/
 1. **Formulario de Creación**
    - Nombre del remitente y destinatario
    - Mensaje escrito personalizado
-   - Grabación de mensaje de voz
-   - Subida de imagen opcional
+   - Grabación de mensaje de voz (máximo 1 minuto)
+   - Subida de imagen opcional (desde cámara o búsqueda en Unsplash)
+   - PIN de privacidad opcional (4 dígitos)
    - Aceptación de términos y condiciones (requerido)
    - Confirmación de mayoría de edad (requerido)
 
@@ -128,7 +137,9 @@ memecards/
 - `POST /api/pages/create` - Crear una nueva tarjeta
 - `GET /api/pages/:code` - Obtener información de una tarjeta
 - `GET /api/audio/stream/:filename` - Stream de audio procesado
-- `GET /api/images/:filename` - Servir imágenes subidas
+- `GET /api/images/:filename` - Servir imágenes subidas/optimizadas
+- `GET /api/unsplash/search` - Buscar imágenes en Unsplash
+- `POST /api/unsplash/download` - Descargar y optimizar imagen de Unsplash
 - `GET /api/stores` - API de tiendas físicas
 
 ## 🛠️ Tecnologías Utilizadas
@@ -147,22 +158,29 @@ memecards/
 - TypeScript
 - Multer (manejo de archivos)
 - FFmpeg (procesamiento de audio)
+- Sharp (optimización de imágenes)
 - MongoDB Atlas (tiendas)
 - File-based JSON (páginas de audio)
+- Unsplash API (búsqueda de imágenes)
 
 ## 📝 Notas Importantes
 
 - **Supabase**: Removido del proyecto. El sistema ahora usa exclusivamente el backend local.
 - **GIFs**: Funcionalidad de GIFs removida. Reemplazada por subida de imágenes.
-- **Audio**: Los archivos de audio se procesan automáticamente con FFmpeg para optimización.
-- **Imágenes**: Las imágenes se almacenan localmente y se sirven a través de `/api/images/:filename`.
+- **Audio**: Los archivos de audio se procesan automáticamente con FFmpeg para optimización. **Límite máximo: 1 minuto**.
+- **Imágenes**: Las imágenes se optimizan automáticamente (redimensionadas a 1200x1200px máximo, comprimidas a JPEG calidad 80%) para mejorar el rendimiento.
+- **Unsplash**: Requiere una clave de API de Unsplash. Las imágenes descargadas se optimizan automáticamente.
+- **PIN de Privacidad**: Opcional al crear tarjetas. Si se establece, la tarjeta requerirá el PIN para ser vista.
 
 ## 🔒 Seguridad y Políticas
 
 - Modal obligatorio de términos y condiciones antes de crear tarjetas
 - Confirmación de mayoría de edad requerida
 - Política anti-bullying integrada
+- PIN de privacidad opcional para proteger tarjetas
 - Validación de contenido en el servidor
+- Validación de duración de audio (máximo 1 minuto)
+- Optimización automática de imágenes para seguridad y rendimiento
 
 ## 📚 Documentación Adicional
 

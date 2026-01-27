@@ -1,12 +1,67 @@
-import { Heart, Gift, Mic, QrCode } from 'lucide-react';
+import { useState } from 'react';
+import { Heart, Gift, Mic, QrCode, Search, Loader2 } from 'lucide-react';
 import { StoreLocations } from './StoreLocations';
 import { ValentineCardAnimation } from './ValentineCardAnimation';
+import { FestivitiesNavigation, type FestivityType } from './FestivitiesNavigation';
 
 interface LandingPageProps {
   onCreateCard: () => void;
+  onSearchCard: (code: string) => void;
 }
 
-export function LandingPage({ onCreateCard }: LandingPageProps) {
+export function LandingPage({ onCreateCard, onSearchCard }: LandingPageProps) {
+  const [searchCode, setSearchCode] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [selectedFestivity, setSelectedFestivity] = useState<FestivityType>('valentine');
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!searchCode.trim()) {
+      setSearchError('Por favor ingresa un código');
+      return;
+    }
+
+    const code = searchCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    
+    if (code.length !== 8) {
+      setSearchError('El código debe tener 8 caracteres');
+      return;
+    }
+
+    setSearching(true);
+    setSearchError(null);
+
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const response = await fetch(`${backendUrl}/api/pages/${code}`);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setSearchError('Tarjeta no encontrada. Verifica el código e intenta de nuevo.');
+        } else {
+          setSearchError('Error al buscar la tarjeta. Intenta de nuevo.');
+        }
+        setSearching(false);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        onSearchCard(code);
+      } else {
+        setSearchError('Tarjeta no encontrada');
+        setSearching(false);
+      }
+    } catch (error) {
+      console.error('Error searching card:', error);
+      setSearchError('Error al buscar la tarjeta. Intenta de nuevo.');
+      setSearching(false);
+    }
+  };
+
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-fixed"
@@ -16,7 +71,15 @@ export function LandingPage({ onCreateCard }: LandingPageProps) {
     >
       <div className="absolute inset-0 bg-black/40"></div>
       <div className="relative">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
+        {/* Navegación de Festividades */}
+        <div className="mb-8">
+          <FestivitiesNavigation 
+            selectedFestivity={selectedFestivity}
+            onFestivityChange={setSelectedFestivity}
+          />
+        </div>
+
         <header className="text-center mb-16">
           <div className="flex items-center justify-center mb-4">
             <Heart className="w-12 h-12 text-red-400 fill-red-400 animate-pulse drop-shadow-lg" />
@@ -39,9 +102,77 @@ export function LandingPage({ onCreateCard }: LandingPageProps) {
           </div>
         </header>
 
+        {/* Barra de Búsqueda de Tarjetas */}
+        <div className="max-w-2xl mx-auto mb-12">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/20">
+            <div className="flex items-center space-x-3 mb-4">
+              <Search className="w-6 h-6 text-red-500" />
+              <h2 className="text-2xl font-bold text-gray-800">Buscar Mi Tarjeta</h2>
+            </div>
+            <p className="text-gray-600 mb-4 text-sm">
+              Ingresa el código de 8 caracteres de tu tarjeta para verla
+            </p>
+            <form onSubmit={handleSearch} className="space-y-3">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={searchCode}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+                    setSearchCode(value);
+                    setSearchError(null);
+                  }}
+                  placeholder="Ej: ABC12345"
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-center text-lg font-mono font-bold tracking-widest"
+                  maxLength={8}
+                  disabled={searching}
+                />
+                <button
+                  type="submit"
+                  disabled={searching || !searchCode.trim()}
+                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+                >
+                  {searching ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Buscando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-5 h-5" />
+                      <span>Buscar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              {searchError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-700 text-sm">{searchError}</p>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden mb-16">
-          <div className="bg-gradient-to-r from-red-500 to-pink-500 p-8 text-white">
-            <h2 className="text-3xl font-bold mb-4">Sorprende este 14 de Febrero</h2>
+          <div className={`p-8 text-white ${
+            selectedFestivity === 'valentine' ? 'bg-gradient-to-r from-red-500 to-pink-500' :
+            selectedFestivity === 'mothers-day' ? 'bg-gradient-to-r from-pink-500 to-rose-500' :
+            selectedFestivity === 'birthday' ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+            selectedFestivity === 'fathers-day' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
+            selectedFestivity === 'teachers-day' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' :
+            selectedFestivity === 'grandparents-day' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
+            'bg-gradient-to-r from-green-500 to-emerald-500'
+          }`}>
+            <h2 className="text-3xl font-bold mb-4">
+              {selectedFestivity === 'valentine' && 'Sorprende este 14 de Febrero'}
+              {selectedFestivity === 'mothers-day' && 'Celebra el Día de la Madre'}
+              {selectedFestivity === 'birthday' && 'Celebra un Cumpleaños Especial'}
+              {selectedFestivity === 'fathers-day' && 'Honra al Día del Padre'}
+              {selectedFestivity === 'teachers-day' && 'Agradece a tu Maestro'}
+              {selectedFestivity === 'grandparents-day' && 'Celebra a los Abuelos'}
+              {selectedFestivity === 'christmas' && 'Feliz Navidad'}
+            </h2>
             <p className="text-lg opacity-90">
               Una tarjeta física con QR que revela tu mensaje de voz especial
             </p>
@@ -105,12 +236,6 @@ export function LandingPage({ onCreateCard }: LandingPageProps) {
               >
                 Crear Mi Tarjeta
               </button>
-              <a
-                href="/dashboard"
-                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-8 rounded-full text-lg transition-all text-center"
-              >
-                Ver Dashboard
-              </a>
             </div>
           </div>
         </div>

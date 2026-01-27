@@ -2,10 +2,13 @@ import { Router } from 'express';
 import { upload } from '../middleware/upload.js';
 import { uploadImage } from '../middleware/uploadImage.js';
 import { processAudio } from '../services/audioProcessor.js';
-import { createAudioPage, getPageByCode, getAllPages, deletePageByCode, updatePageByCode, incrementPlayCount } from '../services/pageService.js';
+import { createAudioPage, getPageByCode, getAllPages, deletePageByCode, updatePageByCode, incrementPlayCount, createEmptyPage } from '../services/pageService.js';
 import { generateAdditionalPages } from '../services/autoGeneratePages.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { Request, Response, NextFunction } from 'express';
+import { optimizeImage, downloadAndOptimizeImage } from '../services/imageOptimizer.js';
+import path from 'path';
+import fs from 'fs/promises';
 
 const router = Router();
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
@@ -31,7 +34,14 @@ router.post(
       const audioFile = files.audio[0];
       const imageFile = files.image?.[0];
 
-      const { title, description, format, bitrate, sampleRate, senderName, recipientName, writtenMessage } = req.body;
+      const { title, description, format, bitrate, sampleRate, senderName, recipientName, writtenMessage, pin } = req.body;
+
+      // Validar duración del audio antes de procesar
+      const { getAudioInfo } = await import('../services/audioProcessor.js');
+      const audioInfo = await getAudioInfo(audioFile.path);
+      if (audioInfo.duration > 60) {
+        throw new AppError('El audio no puede ser mayor a 1 minuto. Por favor, graba un mensaje más corto.', 400);
+      }
 
       // Procesar el audio
       const processed = await processAudio(audioFile.path, {
@@ -45,9 +55,24 @@ router.post(
       let imageFilename: string | undefined;
       
       if (imageFile) {
+        // Optimizar la imagen
+        const optimizedPath = await optimizeImage(imageFile.path, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 80,
+        });
+        
+        const optimizedFilename = path.basename(optimizedPath);
         const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-        imageUrl = `${baseUrl}/api/images/${imageFile.filename}`;
-        imageFilename = imageFile.filename;
+        imageUrl = `${baseUrl}/api/images/${optimizedFilename}`;
+        imageFilename = optimizedFilename;
+        
+        // Eliminar la imagen original no optimizada
+        try {
+          await fs.promises.unlink(imageFile.path);
+        } catch (error) {
+          console.error('Error al eliminar imagen original:', error);
+        }
       }
 
       // Generar título y descripción si no se proporcionaron
@@ -66,6 +91,7 @@ router.post(
           writtenMessage,
           imageUrl,
           imageFilename,
+          pin: pin || undefined,
         }
       );
 
@@ -171,6 +197,13 @@ router.put(
         try {
           console.log(`📤 Procesando audio: ${audioFile.originalname} (${audioFile.mimetype}, ${(audioFile.size / 1024 / 1024).toFixed(2)} MB)`);
           
+          // Validar duración del audio antes de procesar
+          const { getAudioInfo } = await import('../services/audioProcessor.js');
+          const audioInfo = await getAudioInfo(audioFile.path);
+          if (audioInfo.duration > 60) {
+            throw new AppError('El audio no puede ser mayor a 1 minuto. Por favor, graba un mensaje más corto.', 400);
+          }
+          
           const processed = await processAudio(audioFile.path, {
             format: 'mp3',
             bitrate: 128, // Calidad estándar para voz (128 kbps)
@@ -189,13 +222,30 @@ router.put(
         throw new AppError('El mensaje de voz es requerido', 400);
       }
 
-      // Si se subió una imagen, procesarla
+      // Si se subió una imagen, procesarla y optimizarla
       if (files.image && files.image[0]) {
         const imageFile = files.image[0];
+        
+        // Optimizar la imagen
+        const optimizedPath = await optimizeImage(imageFile.path, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 80,
+        });
+        
+        const optimizedFilename = path.basename(optimizedPath);
         const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-        imageUrl = `${baseUrl}/api/images/${imageFile.filename}`;
-        imageFilename = imageFile.filename;
-        console.log(`✅ Imagen subida: ${imageUrl}`);
+        imageUrl = `${baseUrl}/api/images/${optimizedFilename}`;
+        imageFilename = optimizedFilename;
+        
+        // Eliminar la imagen original no optimizada
+        try {
+          await fs.unlink(imageFile.path);
+        } catch (error) {
+          console.error('Error al eliminar imagen original:', error);
+        }
+        
+        console.log(`✅ Imagen optimizada: ${imageUrl}`);
       }
 
       // Generar título y descripción si no se proporcionaron
@@ -295,6 +345,73 @@ router.delete('/:code', async (req: Request, res: Response, next: NextFunction) 
     res.json({
       success: true,
       message: 'Página eliminada correctamente',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/pages/bulk-create
+ * Crea múltiples tarjetas sin audio (solo estructura)
+ */
+router.post('/bulk-create', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { storeName, serverId, quantity } = req.body;
+
+    // Validaciones
+    if (!storeName || !serverId) {
+      throw new AppError('Faltan campos requeridos: storeName, serverId', 400);
+    }
+
+    const qty = parseInt(quantity, 10);
+    if (![10, 50, 100, 1000].includes(qty)) {
+      throw new AppError('La cantidad debe ser 10, 50, 100 o 1000', 400);
+    }
+
+    if (qty > 1000) {
+      throw new AppError('No se pueden crear más de 1000 tarjetas a la vez', 400);
+    }
+
+    console.log(`🔄 Creando ${qty} tarjetas para ${storeName} (${serverId})...`);
+
+    const createdPages = [];
+    const errors = [];
+
+    for (let i = 1; i <= qty; i++) {
+      try {
+        const page = await createEmptyPage({
+          title: `${storeName} - ${serverId} - Tarjeta ${i}`,
+          description: `Tarjeta ${i} de ${qty} para ${storeName}`,
+          storeName,
+          serverId,
+        });
+        createdPages.push(page);
+        
+        if (i % 10 === 0) {
+          console.log(`  ✅ ${i}/${qty} tarjetas creadas...`);
+        }
+      } catch (error: any) {
+        console.error(`  ❌ Error al crear tarjeta ${i}:`, error.message);
+        errors.push({ index: i, error: error.message });
+      }
+    }
+
+    console.log(`✨ ${createdPages.length}/${qty} tarjetas creadas exitosamente`);
+
+    res.json({
+      success: true,
+      data: {
+        created: createdPages.length,
+        total: qty,
+        errors: errors.length,
+        pages: createdPages.map(p => ({
+          code: p.code,
+          pageUrl: p.pageUrl,
+          title: p.title,
+        })),
+      },
+      message: `${createdPages.length} tarjetas creadas para ${storeName}`,
     });
   } catch (error) {
     next(error);

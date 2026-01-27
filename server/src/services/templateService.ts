@@ -38,6 +38,8 @@ export async function renderAudioPage(page: AudioPage): Promise<string> {
     template = template.replace(/{{WRITTEN_MESSAGE}}/g, escapeHtml(page.writtenMessage || ''));
     const imageUrl = page.imageUrl || '';
     template = template.replace(/{{IMAGE_URL}}/g, escapeHtml(imageUrl));
+    template = template.replace(/{{HAS_PIN}}/g, String(page.hasPin || false));
+    template = template.replace(/{{PIN}}/g, escapeHtml(page.pin || ''));
     
     return template;
   } catch (error) {

@@ -23,6 +23,9 @@ export interface AudioPage {
   writtenMessage?: string;
   imageUrl?: string;
   imageFilename?: string;
+  // PIN de privacidad (opcional)
+  pin?: string;
+  hasPin?: boolean;
 }
 
 const pagesDir = process.env.PAGES_DIR || './pages-data';
@@ -84,6 +87,7 @@ export async function createAudioPage(
     writtenMessage?: string;
     imageUrl?: string;
     imageFilename?: string;
+    pin?: string;
   }
 ): Promise<AudioPage> {
   const pages = await loadPages();
@@ -120,6 +124,66 @@ export async function createAudioPage(
     writtenMessage: options?.writtenMessage,
     imageUrl: options?.imageUrl,
     imageFilename: options?.imageFilename,
+    pin: options?.pin,
+    hasPin: !!options?.pin,
+  };
+
+  pages.push(newPage);
+  await savePages(pages);
+
+  return newPage;
+}
+
+/**
+ * Crea una página sin audio (solo estructura)
+ */
+export async function createEmptyPage(
+  options?: {
+    title?: string;
+    description?: string;
+    storeName?: string;
+    serverId?: string;
+    pin?: string;
+  }
+): Promise<AudioPage> {
+  const pages = await loadPages();
+  
+  // Generar código único
+  let code: string = '';
+  let exists = true;
+  while (exists) {
+    code = generateUniqueCode();
+    exists = pages.some((p) => p.code === code);
+  }
+
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const pageUrl = `${baseUrl}/page/${code}`;
+  
+  // URL de audio placeholder (no existe realmente)
+  const audioUrl = `${baseUrl}/api/audio/stream/placeholder.mp3`;
+  const audioFilename = 'placeholder.mp3';
+
+  const expirationDate = new Date('2026-02-14T00:00:00');
+
+  const title = options?.title || (options?.storeName && options?.serverId 
+    ? `Tarjeta ${options.storeName} - ${options.serverId}`
+    : 'Tarjeta sin personalizar');
+
+  const newPage: AudioPage = {
+    id: uuidv4(),
+    code,
+    audioUrl,
+    audioFilename,
+    title,
+    description: options?.description || 'Tarjeta creada en masa',
+    createdAt: new Date(),
+    pageUrl,
+    isPersonalized: false,
+    playCount: 0,
+    maxPlays: 5,
+    expirationDate,
+    pin: options?.pin,
+    hasPin: !!options?.pin,
   };
 
   pages.push(newPage);
@@ -175,6 +239,7 @@ export async function updatePageByCode(
     writtenMessage?: string;
     imageUrl?: string;
     imageFilename?: string;
+    pin?: string;
   }
 ): Promise<AudioPage | null> {
   const pages = await loadPages();
@@ -189,6 +254,8 @@ export async function updatePageByCode(
     ...page,
     ...updates,
     personalizedAt: updates.isPersonalized ? new Date() : page.personalizedAt,
+    pin: updates.pin !== undefined ? updates.pin : page.pin,
+    hasPin: updates.pin !== undefined ? !!updates.pin : page.hasPin,
   };
 
   pages[pageIndex] = updatedPage;

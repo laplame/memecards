@@ -3,8 +3,70 @@ import { getPageByCode } from '../services/pageService.js';
 import { renderAudioPage } from '../services/templateService.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { Request, Response, NextFunction } from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs/promises';
 
 const router = Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Sirve la página HTML de tarjeta eliminada
+ */
+async function renderDeletedPage(): Promise<string> {
+  try {
+    const templatePath = path.join(__dirname, '../templates/deletedPage.html');
+    const html = await fs.readFile(templatePath, 'utf-8');
+    return html;
+  } catch (error) {
+    // Si no se puede cargar el template, devolver HTML básico
+    return `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tarjeta Eliminada</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fce4ec 0%, #ffe0e6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+          }
+          .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+          }
+          .icon { font-size: 64px; margin-bottom: 20px; }
+          h1 { color: #333; font-size: 28px; margin-bottom: 15px; }
+          p { color: #666; font-size: 16px; line-height: 1.6; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="icon">🗑️</div>
+          <h1>Tarjeta Eliminada</h1>
+          <p>Esta tarjeta ha sido eliminada y ya no está disponible.</p>
+          <p style="margin-top: 20px;">
+            <a href="/" style="color: #ef4444; text-decoration: none;">Volver al Inicio</a>
+          </p>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+}
 
 /**
  * GET /page/:code
@@ -16,7 +78,10 @@ router.get('/:code', async (req: Request, res: Response, next: NextFunction) => 
     const page = await getPageByCode(code);
 
     if (!page) {
-      throw new AppError('Página no encontrada', 404);
+      // En lugar de lanzar error, servir página de tarjeta eliminada
+      const deletedHtml = await renderDeletedPage();
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(404).send(deletedHtml);
     }
 
     // Verificar si la página está expirada o destruida

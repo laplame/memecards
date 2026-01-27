@@ -6,6 +6,7 @@ import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
 const imagesDir = process.env.IMAGES_DIR || './images';
+const optimizedDir = path.join(imagesDir, 'optimized');
 
 /**
  * GET /api/images/:filename
@@ -14,13 +15,19 @@ const imagesDir = process.env.IMAGES_DIR || './images';
 router.get('/:filename', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { filename } = req.params;
-    const imagePath = path.join(imagesDir, filename);
-
-    // Verificar que el archivo existe
+    // Buscar primero en optimized, luego en imagesDir
+    let imagePath = path.join(optimizedDir, filename);
+    
     try {
       await fs.access(imagePath);
     } catch {
-      throw new AppError('Imagen no encontrada', 404);
+      // Si no está en optimized, buscar en imagesDir
+      imagePath = path.join(imagesDir, filename);
+      try {
+        await fs.access(imagePath);
+      } catch {
+        throw new AppError('Imagen no encontrada', 404);
+      }
     }
 
     // Determinar el tipo de contenido basado en la extensión
