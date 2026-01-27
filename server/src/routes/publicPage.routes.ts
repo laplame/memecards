@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getPageByCode } from '../services/pageService.js';
+import { getPageByCode, getOrCreateDemoPage } from '../services/pageService.js';
 import { renderAudioPage } from '../services/templateService.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { Request, Response, NextFunction } from 'express';
@@ -75,7 +75,15 @@ async function renderDeletedPage(): Promise<string> {
 router.get('/:code', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.params;
-    const page = await getPageByCode(code);
+    
+    // Si es la página demo, siempre crear una nueva (elimina la anterior)
+    let page;
+    if (code === 'DEMO1234') {
+      // Siempre crear una nueva demo, eliminando la anterior
+      page = await getOrCreateDemoPage();
+    } else {
+      page = await getPageByCode(code);
+    }
 
     if (!page) {
       // En lugar de lanzar error, servir página de tarjeta eliminada

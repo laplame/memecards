@@ -112,13 +112,45 @@ router.get('/stream/:filename', async (req: Request, res: Response, next: NextFu
     
     const filePath = path.join(processedDir, filename);
 
+    let fileExists = false;
     try {
       await fs.access(filePath);
+      fileExists = true;
     } catch {
-      console.warn(`⚠️  Archivo de audio no encontrado: ${filename} en ${processedDir}`);
-      throw new AppError(`Archivo procesado no encontrado: ${filename}`, 404);
+      // Si es placeholder.mp3 (usado en demo), servir un MP3 silencioso en memoria
+      if (filename === 'placeholder.mp3') {
+        // MP3 silencioso válido de ~1 segundo (128kbps, 44.1kHz, estéreo)
+        // Frame header + frame data mínimo para un MP3 válido
+        const silentMp3 = Buffer.from([
+          // Frame sync + header
+          0xFF, 0xFB, 0x90, 0x00,
+          // Frame data (silencio)
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ]);
+        
+        // Intentar crear el archivo para futuras solicitudes
+        try {
+          await fs.writeFile(filePath, silentMp3);
+          console.log(`✅ Creado archivo placeholder.mp3 para demo`);
+        } catch (writeError) {
+          console.warn(`⚠️  No se pudo crear placeholder.mp3, sirviendo desde memoria`);
+        }
+        
+        // Servir el MP3 silencioso directamente
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Length', silentMp3.length);
+        res.setHeader('Accept-Ranges', 'bytes');
+        return res.send(silentMp3);
+      } else {
+        console.warn(`⚠️  Archivo de audio no encontrado: ${filename} en ${processedDir}`);
+        throw new AppError(`Archivo procesado no encontrado: ${filename}`, 404);
+      }
     }
 
+    // Si llegamos aquí, el archivo existe
     const stat = await fs.stat(filePath);
     const fileSize = stat.size;
     const range = req.headers.range;

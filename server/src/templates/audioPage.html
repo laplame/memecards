@@ -29,9 +29,14 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, var(--overlay-opacity, 0.3));
       backdrop-filter: blur(10px);
       z-index: 0;
+    }
+    
+    body.has-wallpaper::before {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
     }
 
     .back-button {
@@ -697,17 +702,12 @@
 
             <!-- Selector de Imagen -->
             <div style="margin-top: 10px;">
-              <label for="imageUpload" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #333;">
+              <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #333;">
                 Foto (Opcional)
               </label>
-              <input 
-                type="file" 
-                id="imageUpload" 
-                name="image"
-                accept="image/*"
-                style="display: none;"
-              >
-              <div id="imagePreviewContainer" style="display: none; margin-top: 10px;">
+              
+              <!-- Preview de imagen seleccionada -->
+              <div id="imagePreviewContainer" style="display: none; margin-bottom: 10px;">
                 <div style="position: relative; display: inline-block;">
                   <img id="imagePreview" style="max-width: 100%; max-height: 300px; border-radius: 10px; border: 2px solid #e5e7eb;">
                   <button 
@@ -719,13 +719,100 @@
                   </button>
                 </div>
               </div>
-              <button 
-                type="button" 
-                id="imageUploadButton"
-                style="width: 100%; padding: 12px; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #333;"
-              >
-                📷 Seleccionar Foto
-              </button>
+
+              <!-- Opciones de imagen (solo si no hay preview) -->
+              <div id="imageOptionsContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                <!-- Tomar Foto -->
+                <button 
+                  type="button" 
+                  id="openCameraButton"
+                  style="padding: 16px; background: #dbeafe; border: 2px dashed #3b82f6; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.2s;"
+                  onmouseover="this.style.background='#bfdbfe'; this.style.borderColor='#2563eb';"
+                  onmouseout="this.style.background='#dbeafe'; this.style.borderColor='#3b82f6';"
+                >
+                  <div style="font-size: 24px; margin-bottom: 4px;">📷</div>
+                  <div style="font-size: 12px; font-weight: 600; color: #1e40af;">Tomar Foto</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Abrir cámara</div>
+                </button>
+
+                <!-- Subir Archivo -->
+                <div style="padding: 16px; background: #f3f4f6; border: 2px dashed #9ca3af; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s;"
+                  onmouseover="this.style.background='#e5e7eb'; this.style.borderColor='#6b7280';"
+                  onmouseout="this.style.background='#f3f4f6'; this.style.borderColor='#9ca3af';"
+                >
+                  <input 
+                    type="file" 
+                    id="imageUpload" 
+                    name="image"
+                    accept="image/*"
+                    style="display: none;"
+                  >
+                  <label for="imageUpload" style="cursor: pointer; display: block;">
+                    <div style="font-size: 24px; margin-bottom: 4px;">🖼️</div>
+                    <div style="font-size: 12px; font-weight: 600; color: #374151;">Subir Archivo</div>
+                    <div style="font-size: 10px; color: #64748b; margin-top: 2px;">JPG, PNG, GIF</div>
+                  </label>
+                </div>
+
+                <!-- Buscar en Unsplash -->
+                <button 
+                  type="button" 
+                  id="openUnsplashButton"
+                  style="padding: 16px; background: #f3e8ff; border: 2px dashed #a855f7; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.2s;"
+                  onmouseover="this.style.background='#e9d5ff'; this.style.borderColor='#9333ea';"
+                  onmouseout="this.style.background='#f3e8ff'; this.style.borderColor='#a855f7';"
+                >
+                  <div style="font-size: 24px; margin-bottom: 4px;">🔍</div>
+                  <div style="font-size: 12px; font-weight: 600; color: #6b21a8;">Buscar en Unsplash</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Imágenes gratuitas</div>
+                </button>
+              </div>
+
+              <!-- Búsqueda de Unsplash (oculto inicialmente) -->
+              <div id="unsplashSearchContainer" style="display: none; margin-top: 12px; padding: 16px; background: #f3e8ff; border: 2px solid #a855f7; border-radius: 10px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                  <input
+                    type="text"
+                    id="unsplashQueryInput"
+                    placeholder="Buscar imágenes (ej: love, valentine, heart)"
+                    style="flex: 1; padding: 10px; border: 2px solid #c084fc; border-radius: 8px; font-size: 14px;"
+                  >
+                  <button
+                    type="button"
+                    id="unsplashSearchButton"
+                    style="padding: 10px 20px; background: #9333ea; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;"
+                  >
+                    Buscar
+                  </button>
+                  <button
+                    type="button"
+                    id="closeUnsplashButton"
+                    style="padding: 10px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer;"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div id="unsplashResultsGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 200px; overflow-y: auto;">
+                  <!-- Resultados de Unsplash se cargarán aquí -->
+                </div>
+              </div>
+
+              <!-- Opción para usar como wallpaper -->
+              <div id="wallpaperOptionContainer" style="display: none; margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input 
+                    type="checkbox" 
+                    id="useImageAsWallpaperCheckbox"
+                    style="width: 18px; height: 18px; cursor: pointer;"
+                  >
+                  <span style="font-size: 13px; color: #374151; font-weight: 500;">
+                    Usar esta imagen como fondo de la tarjeta
+                  </span>
+                </label>
+                <p style="font-size: 11px; color: #6b7280; margin-top: 4px; margin-left: 26px;">
+                  La imagen se mostrará como wallpaper de fondo en lugar de dentro del contenido
+                </p>
+              </div>
             </div>
           </div>
 
@@ -739,19 +826,62 @@
               🎤 Grabar Mensaje
             </button>
             
-            <div class="audio-preview" id="audioPreview">
+            <!-- Vista previa de audio -->
+            <div class="audio-preview" id="audioPreview" style="display: none;">
               <div class="audio-info">
                 <span id="audioStatus">Audio grabado</span>
                 <button 
                   type="button" 
-                  id="deleteAudio" 
-                  style="background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;"
+                  id="deleteAudio"
+                  style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 10px;"
                 >
                   Eliminar
                 </button>
               </div>
-              <audio id="previewAudio" controls></audio>
+              <audio id="previewAudio" controls style="width: 100%; margin-top: 10px;"></audio>
             </div>
+          </div>
+
+          <!-- Sección de PIN de Privacidad -->
+          <div class="form-group" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); padding: 16px; border-radius: 12px; border: 2px solid #c084fc;">
+            <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 12px;">
+              <div style="font-size: 24px;">🔒</div>
+              <div style="flex: 1;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+                  <input
+                    type="checkbox"
+                    id="enablePinCheckbox"
+                    style="width: 20px; height: 20px; cursor: pointer;"
+                  >
+                  <span style="font-weight: 600; color: #6b21a8; font-size: 15px;">
+                    Agregar PIN de privacidad (opcional)
+                  </span>
+                </label>
+                <p style="font-size: 13px; color: #6b7280; margin-left: 28px; line-height: 1.5;">
+                  Protege tu tarjeta con un código de 4 dígitos. Solo quien tenga el código podrá verla.
+                </p>
+              </div>
+            </div>
+
+            <!-- Campo de PIN (oculto inicialmente) -->
+            <div id="pinInputContainer" style="display: none; margin-top: 12px; margin-left: 36px;">
+              <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #6b21a8;">
+                Código PIN (4 dígitos) *
+              </label>
+              <input
+                type="text"
+                id="pinInput"
+                inputmode="numeric"
+                maxlength="4"
+                placeholder="1234"
+                style="width: 100%; max-width: 200px; padding: 12px; border: 2px solid #c084fc; border-radius: 8px; text-align: center; font-size: 20px; font-weight: 700; font-family: monospace; letter-spacing: 4px;"
+              >
+              <p style="font-size: 11px; color: #6b7280; margin-top: 6px;">
+                Comparte este código solo con quien quieras que vea la tarjeta
+              </p>
+            </div>
+          </div>
+            
           </div>
 
           <button type="submit" class="submit-button" id="submitBtn">
@@ -822,7 +952,23 @@
       imageUrl: '{{IMAGE_URL}}' || null,
       hasPin: '{{HAS_PIN}}' === 'true',
       correctPin: '{{PIN}}' || '',
+      isDemo: '{{CODE}}' === 'DEMO1234',
+      useImageAsWallpaper: '{{USE_IMAGE_AS_WALLPAPER}}' === 'true',
     };
+
+    // Aplicar imagen como wallpaper si está configurada (inicial)
+    function applyWallpaperIfNeeded() {
+      if (PAGE_DATA.useImageAsWallpaper && PAGE_DATA.imageUrl) {
+        document.body.style.backgroundImage = `url('${PAGE_DATA.imageUrl}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+        document.body.classList.add('has-wallpaper');
+      }
+    }
+    
+    // Aplicar al cargar la página
+    applyWallpaperIfNeeded();
 
     const displayImage = document.getElementById('displayImage');
     const displayImageImg = document.getElementById('displayImageImg');
@@ -849,6 +995,23 @@
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
     const imagePreview = document.getElementById('imagePreview');
     const removeImage = document.getElementById('removeImage');
+    const imageOptionsContainer = document.getElementById('imageOptionsContainer');
+    const openCameraButton = document.getElementById('openCameraButton');
+    const openUnsplashButton = document.getElementById('openUnsplashButton');
+    const unsplashSearchContainer = document.getElementById('unsplashSearchContainer');
+    const unsplashQueryInput = document.getElementById('unsplashQueryInput');
+    const unsplashSearchButton = document.getElementById('unsplashSearchButton');
+    const closeUnsplashButton = document.getElementById('closeUnsplashButton');
+    const unsplashResultsGrid = document.getElementById('unsplashResultsGrid');
+    const wallpaperOptionContainer = document.getElementById('wallpaperOptionContainer');
+    const useImageAsWallpaperCheckbox = document.getElementById('useImageAsWallpaperCheckbox');
+    const enablePinCheckbox = document.getElementById('enablePinCheckbox');
+    const pinInputContainer = document.getElementById('pinInputContainer');
+    const pinInput = document.getElementById('pinInput');
+    
+    let cameraStream = null;
+    let videoElement = null;
+    let canvasElement = null;
     const writtenMessage = document.getElementById('writtenMessage');
     const termsModal = document.getElementById('termsModal');
     const acceptTermsBtn = document.getElementById('acceptTermsBtn');
@@ -907,6 +1070,54 @@
     let recordingTimer = null;
     let selectedImageFile = null;
 
+    // Manejar eliminación de demo al cerrar ventana
+    if (PAGE_DATA.isDemo) {
+      let demoDeleted = false;
+      
+      function deleteDemo() {
+        if (demoDeleted) return;
+        demoDeleted = true;
+        
+        // Usar sendBeacon para asegurar que la petición se envíe incluso si la página se cierra
+        const url = `${PAGE_DATA.baseUrl}/api/pages/demo`;
+        if (navigator.sendBeacon) {
+          // sendBeacon no soporta DELETE directamente, usar fetch con keepalive
+          fetch(url, {
+            method: 'DELETE',
+            keepalive: true,
+          }).catch(() => {
+            // Ignorar errores si la página ya se cerró
+          });
+        } else {
+          // Fallback para navegadores que no soportan keepalive
+          fetch(url, {
+            method: 'DELETE',
+          }).catch(() => {
+            // Ignorar errores si la página ya se cerró
+          });
+        }
+      }
+      
+      // Detectar cierre de ventana/pestaña
+      window.addEventListener('beforeunload', deleteDemo);
+      window.addEventListener('unload', deleteDemo);
+      
+      // Detectar cuando la pestaña se oculta (puede indicar cierre)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          // Esperar un poco para ver si vuelve a ser visible
+          setTimeout(() => {
+            if (document.visibilityState === 'hidden') {
+              deleteDemo();
+            }
+          }, 2000);
+        }
+      });
+      
+      // También eliminar si se navega a otra página
+      window.addEventListener('pagehide', deleteDemo);
+    }
+
     // Emoticones populares para San Valentín
     const popularEmojis = [
       '❤️', '💕', '💖', '💗', '💓', '💞', '💝', '💘',
@@ -959,47 +1170,255 @@
       emojiPicker.style.display = 'none';
     });
 
-    // Manejar selección de imagen
-    imageUploadButton.addEventListener('click', () => {
-      imageUpload.click();
-    });
-
-    imageUpload.addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (file) {
-        // Validar tipo de archivo
-        if (!file.type.startsWith('image/')) {
-          showStatus('Por favor selecciona un archivo de imagen válido', 'error');
-          return;
+    // Manejar selección de imagen desde archivo
+    if (imageUpload) {
+      imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          handleImageFile(file);
         }
-        
-        // Validar tamaño (10MB máximo)
-        if (file.size > 10 * 1024 * 1024) {
-          showStatus('La imagen no puede ser mayor a 10MB', 'error');
-          return;
-        }
+      });
+    }
 
-        selectedImageFile = file;
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          imagePreview.src = reader.result;
-          imagePreviewContainer.style.display = 'block';
-          imageUploadButton.style.display = 'none';
-        };
-        reader.readAsDataURL(file);
+    // Manejar selección de imagen desde archivo
+    if (imageUpload) {
+      imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          handleImageFile(file);
+        }
+      });
+    }
+
+    // Función para manejar archivo de imagen
+    function handleImageFile(file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        showStatus('Por favor selecciona un archivo de imagen válido', 'error');
+        return;
       }
-    });
+      
+      // Validar tamaño (10MB máximo)
+      if (file.size > 10 * 1024 * 1024) {
+        showStatus('La imagen no puede ser mayor a 10MB', 'error');
+        return;
+      }
+
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        imagePreview.src = reader.result;
+        imagePreviewContainer.style.display = 'block';
+        if (imageOptionsContainer) imageOptionsContainer.style.display = 'none';
+        if (wallpaperOptionContainer) wallpaperOptionContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Abrir cámara
+    if (openCameraButton) {
+      openCameraButton.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' } 
+          });
+          cameraStream = stream;
+          
+          // Crear modal de cámara
+          const cameraModal = document.createElement('div');
+          cameraModal.id = 'cameraModal';
+          cameraModal.style.cssText = 'position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; padding: 20px;';
+          
+          cameraModal.innerHTML = `
+            <div style="background: white; border-radius: 20px; padding: 24px; max-width: 600px; width: 100%;">
+              <div style="display: flex; justify-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 20px; font-weight: 700; color: #333;">Tomar Foto</h3>
+                <button id="closeCameraBtn" style="background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">✕</button>
+              </div>
+              <div style="background: black; border-radius: 12px; overflow: hidden; margin-bottom: 16px;">
+                <video id="cameraVideo" autoplay playsinline style="width: 100%; max-height: 400px;"></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+              </div>
+              <div style="display: flex; gap: 12px;">
+                <button id="cancelCameraBtn" style="flex: 1; padding: 12px; background: #e5e7eb; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancelar</button>
+                <button id="capturePhotoBtn" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">📷 Capturar Foto</button>
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(cameraModal);
+          
+          const cameraVideo = document.getElementById('cameraVideo');
+          const cameraCanvas = document.getElementById('cameraCanvas');
+          const closeCameraBtn = document.getElementById('closeCameraBtn');
+          const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+          const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+          
+          cameraVideo.srcObject = stream;
+          
+          const closeCamera = () => {
+            if (cameraStream) {
+              cameraStream.getTracks().forEach(track => track.stop());
+              cameraStream = null;
+            }
+            document.body.removeChild(cameraModal);
+          };
+          
+          closeCameraBtn.addEventListener('click', closeCamera);
+          cancelCameraBtn.addEventListener('click', closeCamera);
+          
+          capturePhotoBtn.addEventListener('click', () => {
+            const context = cameraCanvas.getContext('2d');
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+            context.drawImage(cameraVideo, 0, 0);
+            
+            cameraCanvas.toBlob((blob) => {
+              if (blob) {
+                const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                handleImageFile(file);
+                closeCamera();
+              }
+            }, 'image/jpeg', 0.9);
+          });
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          let errorMessage = 'No se pudo acceder a la cámara.';
+          if (error.name === 'NotAllowedError') {
+            errorMessage = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara.';
+          } else if (error.name === 'NotFoundError') {
+            errorMessage = 'No se encontró ninguna cámara.';
+          }
+          alert(errorMessage);
+        }
+      });
+    }
+
+    // Buscar en Unsplash
+    if (openUnsplashButton) {
+      openUnsplashButton.addEventListener('click', () => {
+        if (unsplashSearchContainer) {
+          unsplashSearchContainer.style.display = 'block';
+        }
+      });
+    }
+
+    if (closeUnsplashButton) {
+      closeUnsplashButton.addEventListener('click', () => {
+        if (unsplashSearchContainer) {
+          unsplashSearchContainer.style.display = 'none';
+        }
+      });
+    }
+
+    // Buscar imágenes en Unsplash
+    if (unsplashSearchButton && unsplashQueryInput) {
+      unsplashSearchButton.addEventListener('click', async () => {
+        const query = unsplashQueryInput.value.trim();
+        if (!query) {
+          alert('Por favor ingresa un término de búsqueda');
+          return;
+        }
+
+        unsplashSearchButton.disabled = true;
+        unsplashSearchButton.textContent = 'Buscando...';
+
+        try {
+          const response = await fetch(`${PAGE_DATA.baseUrl}/api/unsplash/search?query=${encodeURIComponent(query)}&perPage=20`);
+          if (!response.ok) throw new Error('Error al buscar imágenes');
+          
+          const data = await response.json();
+          const results = data.data?.results || [];
+          
+          if (unsplashResultsGrid) {
+            unsplashResultsGrid.innerHTML = '';
+            results.forEach((img) => {
+              const imgDiv = document.createElement('div');
+              imgDiv.style.cssText = 'position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent;';
+              imgDiv.innerHTML = `
+                <img src="${img.urls.thumb}" alt="${img.alt_description || ''}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;">
+                  <span style="color: white; font-size: 24px;">✓</span>
+                </div>
+              `;
+              
+              imgDiv.addEventListener('mouseenter', () => {
+                imgDiv.querySelector('div').style.opacity = '1';
+              });
+              imgDiv.addEventListener('mouseleave', () => {
+                imgDiv.querySelector('div').style.opacity = '0';
+              });
+              
+              imgDiv.addEventListener('click', async () => {
+                try {
+                  const downloadResponse = await fetch(`${PAGE_DATA.baseUrl}/api/unsplash/download`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl: img.urls.regular }),
+                  });
+                  
+                  if (!downloadResponse.ok) throw new Error('Error al descargar imagen');
+                  
+                  const downloadData = await downloadResponse.json();
+                  const imageUrl = downloadData.data.url;
+                  
+                  // Crear un File desde la URL
+                  const imgResponse = await fetch(imageUrl);
+                  const blob = await imgResponse.blob();
+                  const file = new File([blob], 'unsplash-image.jpg', { type: 'image/jpeg' });
+                  
+                  handleImageFile(file);
+                  if (unsplashSearchContainer) unsplashSearchContainer.style.display = 'none';
+                } catch (error) {
+                  console.error('Error downloading image:', error);
+                  alert('Error al descargar imagen. Intenta de nuevo.');
+                }
+              });
+              
+              unsplashResultsGrid.appendChild(imgDiv);
+            });
+          }
+        } catch (error) {
+          console.error('Error searching Unsplash:', error);
+          alert('Error al buscar imágenes. Intenta de nuevo.');
+        } finally {
+          unsplashSearchButton.disabled = false;
+          unsplashSearchButton.textContent = 'Buscar';
+        }
+      });
+    }
+
+    // Manejar checkbox de PIN
+    if (enablePinCheckbox && pinInputContainer && pinInput) {
+      enablePinCheckbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          pinInputContainer.style.display = 'block';
+          pinInput.required = true;
+        } else {
+          pinInputContainer.style.display = 'none';
+          pinInput.required = false;
+          pinInput.value = '';
+        }
+      });
+      
+      // Validar que solo sean números y máximo 4 dígitos
+      pinInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+      });
+    }
 
     // Eliminar imagen seleccionada
-    removeImage.addEventListener('click', () => {
-      selectedImageFile = null;
-      imagePreviewContainer.style.display = 'none';
-      imageUploadButton.style.display = 'block';
-      imageUpload.value = '';
-      if (imagePreview) {
-        imagePreview.src = '';
-      }
-    });
+    if (removeImage) {
+      removeImage.addEventListener('click', () => {
+        selectedImageFile = null;
+        imagePreviewContainer.style.display = 'none';
+        if (imageOptionsContainer) imageOptionsContainer.style.display = 'grid';
+        if (wallpaperOptionContainer) wallpaperOptionContainer.style.display = 'none';
+        if (useImageAsWallpaperCheckbox) useImageAsWallpaperCheckbox.checked = false;
+        if (imageUpload) imageUpload.value = '';
+        if (imagePreview) imagePreview.src = '';
+      });
+    }
 
     const headerTitle = document.getElementById('headerTitle');
 
@@ -1154,6 +1573,7 @@
       if (mainContainer) mainContainer.style.display = 'block';
     }
 
+
     // Inicializar vista según estado
     if (!PAGE_DATA.isPersonalized) {
       personalizationForm.classList.add('active');
@@ -1163,6 +1583,15 @@
       // Si ya está personalizada, ocultar el modal
       termsModal.style.display = 'none';
       termsAccepted = true;
+      
+      // Si la imagen debe usarse como wallpaper, ocultar la imagen del contenido
+      if (PAGE_DATA.useImageAsWallpaper && PAGE_DATA.imageUrl && displayImage) {
+        displayImage.style.display = 'none';
+      } else if (PAGE_DATA.imageUrl && displayImage) {
+        // Mostrar la imagen en el contenido si no es wallpaper
+        displayImageImg.src = PAGE_DATA.imageUrl;
+        displayImage.style.display = 'block';
+      }
       playerView.classList.add('active');
       updateLimitsInfo();
       updateHeaderTitle();
@@ -1419,6 +1848,30 @@
       formData.append('recipientName', recipientName);
       formData.append('writtenMessage', writtenMessage);
       
+      // Agregar imagen si existe
+      if (selectedImageFile) {
+        formData.append('image', selectedImageFile);
+      }
+      
+      // Agregar PIN si está habilitado
+      if (enablePinCheckbox && enablePinCheckbox.checked && pinInput && pinInput.value.length === 4) {
+        formData.append('pin', pinInput.value);
+      }
+      
+      // Agregar opción de wallpaper
+      if (useImageAsWallpaperCheckbox && useImageAsWallpaperCheckbox.checked) {
+        formData.append('useImageAsWallpaper', 'true');
+      }
+      
+      // Validar PIN si está habilitado
+      if (enablePinCheckbox && enablePinCheckbox.checked) {
+        if (!pinInput || pinInput.value.length !== 4) {
+          showStatus('Por favor, ingresa un PIN de 4 dígitos', 'error');
+          if (pinInput) pinInput.focus();
+          return;
+        }
+      }
+      
       // Determinar la extensión del archivo basado en el tipo MIME
       let extension = 'webm';
       if (audioBlob.type.includes('ogg')) {
@@ -1430,11 +1883,6 @@
       }
       
       formData.append('audio', audioBlob, `voice-message.${extension}`);
-      
-      // Agregar imagen si fue seleccionada
-      if (selectedImageFile) {
-        formData.append('image', selectedImageFile);
-      }
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creando...';
@@ -1487,8 +1935,24 @@
           // Mostrar imagen si fue subida
           if (data.data.imageUrl) {
             PAGE_DATA.imageUrl = data.data.imageUrl;
-            displayImageImg.src = data.data.imageUrl;
-            displayImage.style.display = 'block';
+            PAGE_DATA.useImageAsWallpaper = data.data.useImageAsWallpaper || false;
+            
+            // Si la imagen debe usarse como wallpaper, aplicarla
+            if (PAGE_DATA.useImageAsWallpaper && PAGE_DATA.imageUrl) {
+              document.body.style.backgroundImage = `url('${PAGE_DATA.imageUrl}')`;
+              document.body.style.backgroundSize = 'cover';
+              document.body.style.backgroundPosition = 'center';
+              document.body.style.backgroundAttachment = 'fixed';
+              document.body.classList.add('has-wallpaper');
+              // Ocultar la imagen del contenido si es wallpaper
+              if (displayImage) displayImage.style.display = 'none';
+            } else {
+              // Mostrar la imagen en el contenido si no es wallpaper
+              if (displayImage && PAGE_DATA.imageUrl) {
+                displayImageImg.src = PAGE_DATA.imageUrl;
+                displayImage.style.display = 'block';
+              }
+            }
           }
 
           // Cambiar a vista de reproducción

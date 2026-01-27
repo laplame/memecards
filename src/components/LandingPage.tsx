@@ -1,15 +1,14 @@
 import { useState } from 'react';
-import { Heart, Gift, Mic, QrCode, Search, Loader2 } from 'lucide-react';
+import { Heart, Gift, Mic, QrCode, Search, Loader2, PlayCircle } from 'lucide-react';
 import { StoreLocations } from './StoreLocations';
 import { ValentineCardAnimation } from './ValentineCardAnimation';
 import { FestivitiesNavigation, type FestivityType } from './FestivitiesNavigation';
 
 interface LandingPageProps {
-  onCreateCard: () => void;
   onSearchCard: (code: string) => void;
 }
 
-export function LandingPage({ onCreateCard, onSearchCard }: LandingPageProps) {
+export function LandingPage({ onSearchCard }: LandingPageProps) {
   const [searchCode, setSearchCode] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -230,12 +229,35 @@ export function LandingPage({ onCreateCard, onSearchCard }: LandingPageProps) {
             </div>
 
             <div className="space-y-4">
-              <button
-                onClick={onCreateCard}
-                className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-4 px-8 rounded-full text-xl hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
-              >
-                Crear Mi Tarjeta
-              </button>
+              {/* Botón de Demo */}
+              <div className="relative">
+                <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                  DEMO
+                </div>
+                <button
+                  onClick={() => {
+                    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+                    // Inicializar la demo si no existe
+                    fetch(`${backendUrl}/api/pages/demo/init`)
+                      .then(() => {
+                        // Redirigir a la página demo
+                        window.location.href = `${backendUrl}/page/DEMO1234`;
+                      })
+                      .catch((error) => {
+                        console.error('Error al inicializar demo:', error);
+                        // Intentar de todas formas
+                        window.location.href = `${backendUrl}/page/DEMO1234`;
+                      });
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-4 px-8 rounded-full text-xl hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
+                >
+                  <PlayCircle className="w-6 h-6" />
+                  <span>Ver Demo - Probar Funcionalidad</span>
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Prueba la funcionalidad completa sin crear una tarjeta
+                </p>
+              </div>
             </div>
           </div>
         </div>

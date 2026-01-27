@@ -26,6 +26,8 @@ export interface AudioPage {
   // PIN de privacidad (opcional)
   pin?: string;
   hasPin?: boolean;
+  // Usar imagen como wallpaper/fondo
+  useImageAsWallpaper?: boolean;
 }
 
 const pagesDir = process.env.PAGES_DIR || './pages-data';
@@ -88,6 +90,7 @@ export async function createAudioPage(
     imageUrl?: string;
     imageFilename?: string;
     pin?: string;
+    useImageAsWallpaper?: boolean;
   }
 ): Promise<AudioPage> {
   const pages = await loadPages();
@@ -126,6 +129,7 @@ export async function createAudioPage(
     imageFilename: options?.imageFilename,
     pin: options?.pin,
     hasPin: !!options?.pin,
+    useImageAsWallpaper: options?.useImageAsWallpaper || false,
   };
 
   pages.push(newPage);
@@ -201,6 +205,51 @@ export async function getPageByCode(code: string): Promise<AudioPage | null> {
 }
 
 /**
+ * Crea o obtiene la página demo
+ * Siempre elimina la demo anterior y crea una nueva para empezar de cero
+ */
+export async function getOrCreateDemoPage(): Promise<AudioPage> {
+  const DEMO_CODE = 'DEMO1234';
+  const pages = await loadPages();
+  
+  // Eliminar la demo anterior si existe
+  const demoIndex = pages.findIndex((p) => p.code === DEMO_CODE);
+  if (demoIndex !== -1) {
+    pages.splice(demoIndex, 1);
+    await savePages(pages);
+  }
+
+  // Crear una nueva demo siempre
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const pageUrl = `${baseUrl}/page/${DEMO_CODE}`;
+  // Usar un audio placeholder que se creará automáticamente si no existe
+  const audioUrl = `${baseUrl}/api/audio/stream/placeholder.mp3`;
+  const audioFilename = 'placeholder.mp3';
+  const expirationDate = new Date();
+  expirationDate.setFullYear(expirationDate.getFullYear() + 1); // Expira en 1 año
+
+  const demoPage: AudioPage = {
+    id: uuidv4(),
+    code: DEMO_CODE,
+    audioUrl,
+    audioFilename,
+    title: 'Tarjeta Demo - Prueba la Funcionalidad',
+    description: 'Esta es una tarjeta de demostración. Puedes grabar un mensaje de voz y personalizarla.',
+    createdAt: new Date(),
+    pageUrl,
+    isPersonalized: false,
+    playCount: 0,
+    maxPlays: 100, // Más reproducciones para la demo
+    expirationDate,
+  };
+
+  pages.push(demoPage);
+  await savePages(pages);
+
+  return demoPage;
+}
+
+/**
  * Obtiene todas las páginas
  */
 export async function getAllPages(): Promise<AudioPage[]> {
@@ -240,6 +289,7 @@ export async function updatePageByCode(
     imageUrl?: string;
     imageFilename?: string;
     pin?: string;
+    useImageAsWallpaper?: boolean;
   }
 ): Promise<AudioPage | null> {
   const pages = await loadPages();
@@ -256,6 +306,7 @@ export async function updatePageByCode(
     personalizedAt: updates.isPersonalized ? new Date() : page.personalizedAt,
     pin: updates.pin !== undefined ? updates.pin : page.pin,
     hasPin: updates.pin !== undefined ? !!updates.pin : page.hasPin,
+    useImageAsWallpaper: updates.useImageAsWallpaper !== undefined ? updates.useImageAsWallpaper : page.useImageAsWallpaper,
   };
 
   pages[pageIndex] = updatedPage;

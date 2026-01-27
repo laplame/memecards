@@ -38,10 +38,6 @@ function App() {
     }
   }, []);
 
-  const handleCreateCard = () => {
-    setCurrentView('create');
-  };
-
   const handleBack = () => {
     setCurrentView('landing');
     window.history.pushState({}, '', '/');
@@ -100,7 +96,7 @@ function App() {
     return <AntiBullying />;
   }
 
-  return <LandingPage onCreateCard={handleCreateCard} onSearchCard={handleSearchCard} />;
+  return <LandingPage onSearchCard={handleSearchCard} />;
 }
 
 export default App;

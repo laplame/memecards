@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { upload } from '../middleware/upload.js';
 import { uploadImage } from '../middleware/uploadImage.js';
 import { processAudio } from '../services/audioProcessor.js';
-import { createAudioPage, getPageByCode, getAllPages, deletePageByCode, updatePageByCode, incrementPlayCount, createEmptyPage } from '../services/pageService.js';
+import { createAudioPage, getPageByCode, getAllPages, deletePageByCode, updatePageByCode, incrementPlayCount, createEmptyPage, getOrCreateDemoPage } from '../services/pageService.js';
 import { generateAdditionalPages } from '../services/autoGeneratePages.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { Request, Response, NextFunction } from 'express';
@@ -12,6 +12,44 @@ import fs from 'fs/promises';
 
 const router = Router();
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+/**
+ * GET /api/pages/demo/init
+ * Inicializa o obtiene la página demo (siempre crea una nueva)
+ */
+router.get('/demo/init', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const demoPage = await getOrCreateDemoPage();
+    res.json({
+      success: true,
+      data: {
+        code: demoPage.code,
+        url: demoPage.pageUrl,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/pages/demo
+ * Elimina la página demo
+ */
+router.delete('/demo', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const deleted = await deletePageByCode('DEMO1234');
+    res.json({
+      success: true,
+      data: {
+        deleted,
+        message: deleted ? 'Demo eliminada correctamente' : 'Demo no encontrada',
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 /**
  * POST /api/pages/create
@@ -34,7 +72,7 @@ router.post(
       const audioFile = files.audio[0];
       const imageFile = files.image?.[0];
 
-      const { title, description, format, bitrate, sampleRate, senderName, recipientName, writtenMessage, pin } = req.body;
+      const { title, description, format, bitrate, sampleRate, senderName, recipientName, writtenMessage, pin, useImageAsWallpaper } = req.body;
 
       // Validar duración del audio antes de procesar
       const { getAudioInfo } = await import('../services/audioProcessor.js');
@@ -92,6 +130,7 @@ router.post(
           imageUrl,
           imageFilename,
           pin: pin || undefined,
+          useImageAsWallpaper: useImageAsWallpaper === 'true' || useImageAsWallpaper === true,
         }
       );
 
@@ -129,7 +168,14 @@ router.post(
 router.get('/:code', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.params;
-    const page = await getPageByCode(code);
+    
+    // Si es la demo, crear o obtener automáticamente
+    let page;
+    if (code === 'DEMO1234') {
+      page = await getOrCreateDemoPage();
+    } else {
+      page = await getPageByCode(code);
+    }
 
     if (!page) {
       throw new AppError('Página no encontrada', 404);
@@ -174,7 +220,14 @@ router.put(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { code } = req.params;
-      const page = await getPageByCode(code);
+      
+      // Si es la demo, crear o obtener automáticamente
+      let page;
+      if (code === 'DEMO1234') {
+        page = await getOrCreateDemoPage();
+      } else {
+        page = await getPageByCode(code);
+      }
 
       if (!page) {
         throw new AppError('Página no encontrada', 404);
@@ -185,7 +238,7 @@ router.put(
       }
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      const { senderName, recipientName, writtenMessage, title, description } = req.body;
+      const { senderName, recipientName, writtenMessage, title, description, useImageAsWallpaper } = req.body;
       let audioUrl = page.audioUrl;
       let audioFilename = page.audioFilename;
       let imageUrl = page.imageUrl;
@@ -263,6 +316,7 @@ router.put(
         writtenMessage: writtenMessage || page.writtenMessage,
         imageUrl: imageUrl || page.imageUrl,
         imageFilename: imageFilename || page.imageFilename,
+        useImageAsWallpaper: useImageAsWallpaper !== undefined ? (useImageAsWallpaper === 'true' || useImageAsWallpaper === true) : page.useImageAsWallpaper,
       });
 
       if (!updatedPage) {

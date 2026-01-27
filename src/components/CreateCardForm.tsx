@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle, Lock, Search, Download } from 'lucide-react';
+import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle, Lock, Search, Download, Camera } from 'lucide-react';
 import { CardSendingAnimation } from './CardSendingAnimation';
 
 interface CreateCardFormProps {
@@ -31,6 +31,9 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
   const [unsplashResults, setUnsplashResults] = useState<any[]>([]);
   const [searchingUnsplash, setSearchingUnsplash] = useState(false);
   const [selectedUnsplashImage, setSelectedUnsplashImage] = useState<string | null>(null);
+  const [useImageAsWallpaper, setUseImageAsWallpaper] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cardData, setCardData] = useState<{
     code: string;
     imageUrl?: string;
@@ -41,6 +44,8 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Actualizar tiempo de reproducción
   useEffect(() => {
@@ -197,10 +202,98 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
     setSelectedImage(null);
     setImagePreview(null);
     setSelectedUnsplashImage(null);
+    setUseImageAsWallpaper(false);
     if (imageInputRef.current) {
       imageInputRef.current.value = '';
     }
+    // Cerrar cámara si está abierta
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+      setShowCamera(false);
+    }
   };
+
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } // Cámara frontal
+      });
+      setCameraStream(stream);
+      setShowCamera(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error: any) {
+      console.error('Error accessing camera:', error);
+      let errorMessage = 'No se pudo acceder a la cámara.';
+      
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDismissedError') {
+        errorMessage = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No se encontró ninguna cámara. Por favor, conecta una cámara e intenta de nuevo.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'La cámara está siendo usada por otra aplicación. Por favor, cierra otras aplicaciones que puedan estar usando la cámara.';
+      }
+      
+      alert(errorMessage);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        // Convertir canvas a blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Crear un File desde el blob
+            const file = new File([blob], `camera-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            setSelectedImage(file);
+            
+            // Crear preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+            
+            // Cerrar cámara
+            if (cameraStream) {
+              cameraStream.getTracks().forEach(track => track.stop());
+              setCameraStream(null);
+            }
+            setShowCamera(false);
+            setSelectedUnsplashImage(null); // Limpiar Unsplash si había una
+          }
+        }, 'image/jpeg', 0.9);
+      }
+    }
+  };
+
+  const closeCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setShowCamera(false);
+  };
+
+  // Limpiar stream cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
 
   const handleSearchUnsplash = async () => {
     if (!unsplashQuery.trim()) {
@@ -308,6 +401,9 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
       }
       if (enablePin && cardPin) {
         formData.append('pin', cardPin);
+      }
+      if (useImageAsWallpaper) {
+        formData.append('useImageAsWallpaper', 'true');
       }
 
       const backendResponse = await fetch(`${backendUrlEnv}/api/pages/create`, {
@@ -563,7 +659,22 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
               <div className="space-y-4">
                 {!imagePreview ? (
                   <>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
+                      <button
+                        type="button"
+                        onClick={openCamera}
+                        className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors bg-blue-50"
+                      >
+                        <div className="flex flex-col items-center space-y-2">
+                          <Camera className="w-10 h-10 text-blue-400" />
+                          <span className="text-sm text-gray-600">
+                            Tomar Foto
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            Abrir cámara
+                          </span>
+                        </div>
+                      </button>
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors">
                         <input
                           ref={imageInputRef}
@@ -579,7 +690,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
                         >
                           <Image className="w-10 h-10 text-gray-400" />
                           <span className="text-sm text-gray-600">
-                            Subir desde cámara
+                            Subir Archivo
                           </span>
                           <span className="text-xs text-gray-500">
                             JPG, PNG, GIF (máx. 10MB)
@@ -602,6 +713,52 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
                         </div>
                       </button>
                     </div>
+
+                    {/* Vista de Cámara */}
+                    {showCamera && (
+                      <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl p-6 max-w-2xl w-full">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-800">Tomar Foto</h3>
+                            <button
+                              type="button"
+                              onClick={closeCamera}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X className="w-6 h-6" />
+                            </button>
+                          </div>
+                          
+                          <div className="relative bg-black rounded-lg overflow-hidden mb-4">
+                            <video
+                              ref={videoRef}
+                              autoPlay
+                              playsInline
+                              className="w-full h-auto max-h-[60vh]"
+                            />
+                            <canvas ref={canvasRef} className="hidden" />
+                          </div>
+                          
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={closeCamera}
+                              className="flex-1 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={capturePhoto}
+                              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+                            >
+                              <Camera className="w-5 h-5" />
+                              Capturar Foto
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {showUnsplashSearch && (
                       <div className="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
@@ -681,6 +838,26 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
                         Desde Unsplash
                       </div>
                     )}
+                  </div>
+                )}
+                
+                {/* Opción para usar imagen como wallpaper */}
+                {imagePreview && (
+                  <div className="mt-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useImageAsWallpaper}
+                        onChange={(e) => setUseImageAsWallpaper(e.target.checked)}
+                        className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                      />
+                      <span className="text-sm text-gray-700 font-medium">
+                        Usar esta imagen como fondo de la tarjeta
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-7">
+                      La imagen se mostrará como wallpaper de fondo en lugar de dentro del contenido
+                    </p>
                   </div>
                 )}
               </div>
