@@ -23,6 +23,8 @@ export interface AudioPage {
   writtenMessage?: string;
   imageUrl?: string;
   imageFilename?: string;
+  // URL de video (Facebook, Instagram, TikTok)
+  videoUrl?: string;
   // PIN de privacidad (opcional)
   pin?: string;
   hasPin?: boolean;
@@ -89,6 +91,7 @@ export async function createAudioPage(
     writtenMessage?: string;
     imageUrl?: string;
     imageFilename?: string;
+    videoUrl?: string;
     pin?: string;
     useImageAsWallpaper?: boolean;
   }
@@ -127,6 +130,7 @@ export async function createAudioPage(
     writtenMessage: options?.writtenMessage,
     imageUrl: options?.imageUrl,
     imageFilename: options?.imageFilename,
+    videoUrl: options?.videoUrl,
     pin: options?.pin,
     hasPin: !!options?.pin,
     useImageAsWallpaper: options?.useImageAsWallpaper || false,
@@ -201,7 +205,30 @@ export async function createEmptyPage(
  */
 export async function getPageByCode(code: string): Promise<AudioPage | null> {
   const pages = await loadPages();
-  return pages.find((p) => p.code === code) || null;
+  const page = pages.find((p) => p.code === code);
+  
+  if (!page) {
+    return null;
+  }
+  
+  // Reiniciar contador a cero si es después de las 12:00 AM del 14 de febrero de 2026
+  const resetDate = new Date('2026-02-14T00:00:00');
+  const now = new Date();
+  
+  // Si ya pasó la fecha de reinicio, resetear el contador
+  if (now >= resetDate && (page.playCount || 0) > 0) {
+    const pageIndex = pages.findIndex((p) => p.code === code);
+    if (pageIndex !== -1) {
+      pages[pageIndex] = {
+        ...page,
+        playCount: 0,
+      };
+      await savePages(pages);
+      return pages[pageIndex];
+    }
+  }
+  
+  return page;
 }
 
 /**
@@ -288,6 +315,7 @@ export async function updatePageByCode(
     writtenMessage?: string;
     imageUrl?: string;
     imageFilename?: string;
+    videoUrl?: string;
     pin?: string;
     useImageAsWallpaper?: boolean;
   }
@@ -307,6 +335,7 @@ export async function updatePageByCode(
     pin: updates.pin !== undefined ? updates.pin : page.pin,
     hasPin: updates.pin !== undefined ? !!updates.pin : page.hasPin,
     useImageAsWallpaper: updates.useImageAsWallpaper !== undefined ? updates.useImageAsWallpaper : page.useImageAsWallpaper,
+    videoUrl: updates.videoUrl !== undefined ? updates.videoUrl : page.videoUrl,
   };
 
   pages[pageIndex] = updatedPage;
@@ -327,7 +356,17 @@ export async function incrementPlayCount(code: string): Promise<AudioPage | null
   }
 
   const page = pages[pageIndex];
-  const currentPlayCount = page.playCount || 0;
+  
+  // Reiniciar contador a cero si es después de las 12:00 AM del 14 de febrero de 2026
+  const resetDate = new Date('2026-02-14T00:00:00');
+  const now = new Date();
+  let currentPlayCount = page.playCount || 0;
+  
+  // Si ya pasó la fecha de reinicio, resetear el contador
+  if (now >= resetDate) {
+    currentPlayCount = 0;
+  }
+  
   const updatedPage: AudioPage = {
     ...page,
     playCount: currentPlayCount + 1,

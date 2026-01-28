@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animación de Tarjeta - Tarjetas con Corazón</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      background: linear-gradient(135deg, #fce4ec 0%, #ffe0e6 100%);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      color: #2f2f2f;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      min-height: 100vh;
+      perspective: 1000px;
+      overflow: hidden;
+    }
+
+    .envelope {
+      background: #d97777;
+      border-radius: 0 0 4px 4px;
+      width: 320px;
+      height: 320px;
+      min-height: 320px;
+      margin: 20px auto;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.42, 0, 0.58, 1);
+      transform-origin: 50% 50%;
+      cursor: pointer;
+    }
+
+    .envelope::before,
+    .envelope::after {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 0;
+      z-index: 2;
+    }
+
+    .envelope::before {
+      left: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 296px 0 0 300px;
+      border-color: transparent transparent transparent #E9978C;
+    }
+
+    .envelope::after {
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 0 296px 300px;
+      border-color: transparent transparent #E9978C transparent;
+    }
+
+    .envelope.open {
+      transform: rotateZ(7deg) translateY(130px) rotateY(-9deg);
+    }
+
+    .envelope.open .flap-outside {
+      top: -1px;
+      animation: open-flap 0.6s ease-in-out forwards;
+    }
+
+    .envelope.open .flap-outside .flap {
+      background: #d97777;
+    }
+
+    .envelope.open .card {
+      transform: translateX(14%) translateY(-200px);
+      transition-delay: 0.6s;
+    }
+
+    .card {
+      background: #ffffff;
+      position: absolute;
+      font-size: 1.4rem;
+      overflow: hidden;
+      left: 0;
+      bottom: 0;
+      width: 70%;
+      height: 85%;
+      padding: 10px 20px;
+      transform: translateX(14%);
+      transition: all 0.3s cubic-bezier(0.42, 0, 0.58, 1) 0s;
+      z-index: 1;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .card-image {
+      width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      font-size: 1rem;
+      color: #2f2f2f;
+      line-height: 1.4;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #d97777;
+    }
+
+    .flap-container {
+      border-radius: 4px;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: all 0.4s cubic-bezier(0.18, 0.81, 0.76, 0.93) 0s;
+      z-index: 3;
+    }
+
+    .flap-outside {
+      overflow-y: auto;
+      transform-origin: 50% 0;
+      animation-delay: 0.6s;
+      animation-fill-mode: backwards;
+      z-index: 4;
+    }
+
+    .flap-outside .flap {
+      background: #E9978C;
+      backface-visibility: hidden;
+    }
+
+    .flap-outside .flap::after {
+      background: #d97777;
+      backface-visibility: hidden;
+      content: '';
+      display: block;
+      position: absolute;
+      transform: rotateX(180deg);
+      height: 100%;
+      width: 100%;
+      left: 0;
+      top: 0;
+      z-index: 1;
+    }
+
+    .flap-inside {
+      transform: rotateX(180deg);
+      border-radius: 0 0 4px 4px;
+      overflow: hidden;
+    }
+
+    .flap-inside .flap {
+      border-radius: 40px 40px 80px 40px;
+      border: 1px solid #d97777;
+      margin-top: 20px;
+    }
+
+    .flap {
+      background: #E9978C;
+      border: 1px solid #d97777;
+      border-radius: 40px;
+      overflow: hidden;
+      width: 300px;
+      height: 300px;
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      margin: -20px 0 0 -151px;
+      transform: rotateZ(45deg);
+      transform-style: preserve-3d;
+      transition: all 0.8s ease 0s;
+      z-index: 2;
+    }
+
+    .flap .lining {
+      background: linear-gradient(135deg, #A3CAC0 0%, #8BB5AB 100%);
+      backface-visibility: hidden;
+      border-radius: 0 0 40px 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 92%;
+      height: 92%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .instruction-text {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.8rem;
+      color: #2f2f2f;
+      font-weight: 700;
+      z-index: 100;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+    }
+
+    @keyframes open-flap {
+      0% {
+        transform: rotateX(0deg);
+        z-index: 4;
+      }
+      50% {
+        transform: rotateX(90deg);
+        z-index: 0;
+      }
+      100% {
+        transform: rotateX(180deg);
+        z-index: 0;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .envelope {
+        width: 280px;
+        height: 280px;
+        min-height: 280px;
+      }
+
+      .flap {
+        width: 260px;
+        height: 260px;
+        margin: -20px 0 0 -131px;
+      }
+
+      .instruction-text {
+        font-size: 1.4rem;
+        top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <p class="instruction-text">Haz clic en el sobre para abrirlo</p>
+  
+  <div class="envelope" id="envelope">
+    <div class="card">
+      <div class="card-content">
+        <div class="card-title">💌 Tarjeta Especial</div>
+        <div class="card-text" id="cardMessage">
+          {{CARD_MESSAGE}}
+        </div>
+        <div id="cardImageContainer" style="display: none;">
+          <img id="cardImage" class="card-image" src="" alt="Imagen de la tarjeta">
+        </div>
+      </div>
+    </div>
+    
+    <div class="flap-outside flap-container">
+      <div class="flap">
+        <div class="lining">💝</div>
+      </div>
+    </div>
+    
+    <div class="flap-inside flap-container">
+      <div class="flap"></div>
+    </div>
+  </div>
+
+  <script>
+    // Datos de la tarjeta (se pueden pasar desde el servidor)
+    const CARD_DATA = {
+      message: '{{CARD_MESSAGE}}' || '¡Feliz Día!',
+      imageUrl: '{{CARD_IMAGE_URL}}' || null,
+      senderName: '{{SENDER_NAME}}' || '',
+      recipientName: '{{RECIPIENT_NAME}}' || ''
+    };
+
+    // Obtener elementos
+    const envelope = document.getElementById('envelope');
+    const cardImageContainer = document.getElementById('cardImageContainer');
+    const cardImage = document.getElementById('cardImage');
+    const cardMessage = document.getElementById('cardMessage');
+
+    // Cargar imagen si existe
+    if (CARD_DATA.imageUrl && CARD_DATA.imageUrl !== 'null' && CARD_DATA.imageUrl !== '') {
+      cardImage.src = CARD_DATA.imageUrl;
+      cardImageContainer.style.display = 'block';
+    }
+
+    // Actualizar mensaje si hay datos
+    if (CARD_DATA.senderName && CARD_DATA.recipientName) {
+      cardMessage.innerHTML = `
+        <div style="margin-bottom: 8px; font-weight: 600;">Para: ${CARD_DATA.recipientName}</div>
+        <div style="margin-bottom: 8px;">De: ${CARD_DATA.senderName}</div>
+        <div style="margin-top: 12px; font-size: 0.9rem;">${CARD_DATA.message}</div>
+      `;
+    } else if (CARD_DATA.message && CARD_DATA.message !== '{{CARD_MESSAGE}}') {
+      cardMessage.textContent = CARD_DATA.message;
+    }
+
+    // Manejar clic en el sobre
+    if (envelope) {
+      envelope.addEventListener('click', function() {
+        this.classList.toggle('open');
+      });
+
+      // También permitir abrir con tecla Enter o Espacio
+      envelope.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.classList.toggle('open');
+        }
+      });
+
+      // Hacer el sobre focusable para accesibilidad
+      envelope.setAttribute('tabindex', '0');
+      envelope.setAttribute('role', 'button');
+      envelope.setAttribute('aria-label', 'Haz clic para abrir el sobre');
+    }
+
+    // Auto-abrir después de 2 segundos (opcional)
+    // Descomentar si quieres que se abra automáticamente
+    /*
+    setTimeout(() => {
+      if (envelope) {
+        envelope.classList.add('open');
+      }
+    }, 2000);
+    */
+  </script>
+</body>
+</html>

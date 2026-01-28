@@ -164,6 +164,7 @@ router.post(
 /**
  * GET /api/pages/:code
  * Obtiene información de una página por código
+ * No devuelve el PIN por seguridad, solo indica si tiene PIN
  */
 router.get('/:code', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -181,9 +182,70 @@ router.get('/:code', async (req: Request, res: Response, next: NextFunction) => 
       throw new AppError('Página no encontrada', 404);
     }
 
+    // No devolver el PIN por seguridad, solo indicar si tiene PIN
+    const { pin, ...pageWithoutPin } = page;
+    const safePage = {
+      ...pageWithoutPin,
+      hasPin: !!page.pin,
+    };
+
     res.json({
       success: true,
-      data: page,
+      data: safePage,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/pages/:code/verify-pin
+ * Verifica el PIN de una página
+ */
+router.post('/:code/verify-pin', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code } = req.params;
+    const { pin } = req.body;
+
+    if (!pin || typeof pin !== 'string') {
+      throw new AppError('PIN requerido', 400);
+    }
+
+    // Obtener la página
+    let page;
+    if (code === 'DEMO1234') {
+      page = await getOrCreateDemoPage();
+    } else {
+      page = await getPageByCode(code);
+    }
+
+    if (!page) {
+      throw new AppError('Página no encontrada', 404);
+    }
+
+    // PIN Master para efectos de seguridad
+    const MASTER_PIN = '8044';
+    
+    // Verificar si tiene PIN
+    if (!page.pin) {
+      // Si no tiene PIN, permitir acceso
+      res.json({
+        success: true,
+        data: {
+          verified: true,
+        },
+      });
+      return;
+    }
+
+    // Verificar el PIN: acepta el PIN de la tarjeta o el PIN master
+    const isCorrect = page.pin === pin || pin === MASTER_PIN;
+
+    res.json({
+      success: true,
+      data: {
+        verified: isCorrect,
+      },
     });
   } catch (error) {
     next(error);
@@ -238,7 +300,7 @@ router.put(
       }
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      const { senderName, recipientName, writtenMessage, title, description, useImageAsWallpaper } = req.body;
+      const { senderName, recipientName, writtenMessage, title, description, useImageAsWallpaper, videoUrl } = req.body;
       let audioUrl = page.audioUrl;
       let audioFilename = page.audioFilename;
       let imageUrl = page.imageUrl;
@@ -317,6 +379,7 @@ router.put(
         imageUrl: imageUrl || page.imageUrl,
         imageFilename: imageFilename || page.imageFilename,
         useImageAsWallpaper: useImageAsWallpaper !== undefined ? (useImageAsWallpaper === 'true' || useImageAsWallpaper === true) : page.useImageAsWallpaper,
+        videoUrl: videoUrl || undefined,
       });
 
       if (!updatedPage) {

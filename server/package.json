@@ -13,7 +13,8 @@
     "seed-stores": "tsx scripts/seed-stores.ts",
     "create-test-pages": "tsx scripts/create-test-pages.ts",
     "update-pages": "tsx scripts/update-existing-pages.ts",
-    "generate-unused": "tsx scripts/generate-10-unused-pages.ts"
+    "generate-unused": "tsx scripts/generate-10-unused-pages.ts",
+    "check-env": "tsx scripts/check-env.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

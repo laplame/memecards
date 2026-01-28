@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { apiRouter } from './routes/api.routes.js';
 import { audioRouter } from './routes/audio.routes.js';
 import { pageRouter } from './routes/page.routes.js';
@@ -10,6 +11,7 @@ import { publicPageRouter } from './routes/publicPage.routes.js';
 import { storeLocationRouter } from './routes/storeLocation.routes.js';
 import { imageRouter } from './routes/image.routes.js';
 import { unsplashRouter } from './routes/unsplash.routes.js';
+import { nanoBananaRouter } from './routes/nanoBanana.routes.js';
 import { staticPagesRouter } from './routes/staticPages.routes.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -19,13 +21,40 @@ const __dirname = path.dirname(__filename);
 
 // Cargar .env desde la raíz del proyecto y desde server/
 // __dirname apunta a server/src cuando se ejecuta con tsx
-// Necesitamos subir dos niveles: server/src -> server -> project-tarjetas
-const rootEnvPath = path.resolve(process.cwd(), '../.env');
-const serverEnvPath = path.resolve(__dirname, '../.env');
+// Intentar múltiples rutas posibles para encontrar el .env
+const envPaths = [
+  path.resolve(process.cwd(), '../.env'),      // Desde server/ -> ../.env (raíz del proyecto)
+  path.resolve(__dirname, '../../.env'),        // Desde server/src -> ../../.env (raíz del proyecto)
+  path.resolve(__dirname, '../.env'),           // Desde server/src -> ../.env (server/.env)
+  path.resolve(process.cwd(), '.env'),          // .env en el directorio actual
+];
 
-// Cargar primero el .env del servidor, luego el de la raíz (la raíz tiene prioridad)
-dotenv.config({ path: serverEnvPath });
-dotenv.config({ path: rootEnvPath, override: true });
+// Cargar .env desde múltiples ubicaciones posibles
+// La última carga exitosa tiene prioridad (override: true)
+let envLoaded = false;
+for (const envPath of envPaths) {
+  try {
+    // Verificar que el archivo existe antes de intentar cargarlo
+    if (fs.existsSync(envPath)) {
+      const result = dotenv.config({ path: envPath, override: true });
+      if (!result.error) {
+        console.log(`✅ Cargado .env desde: ${envPath}`);
+        envLoaded = true;
+      } else {
+        console.warn(`⚠️  Error al cargar ${envPath}: ${result.error.message}`);
+      }
+    }
+  } catch (error) {
+    // Continuar con la siguiente ruta
+  }
+}
+
+if (!envLoaded) {
+  console.warn('⚠️  No se pudo cargar ningún archivo .env');
+  console.warn(`   Rutas intentadas: ${envPaths.join(', ')}`);
+  console.warn(`   process.cwd(): ${process.cwd()}`);
+  console.warn(`   __dirname: ${__dirname}`);
+}
 
 // Debug: mostrar qué variables se cargaron
 if (process.env.MONGODB_ATLAS) {
@@ -35,6 +64,16 @@ if (process.env.MONGODB_ATLAS) {
   console.log(`   Buscando en: ${rootEnvPath}`);
   console.log(`   Buscando en: ${serverEnvPath}`);
   console.log(`   __dirname: ${__dirname}`);
+}
+
+// Debug: verificar nano_banana
+if (process.env.nano_banana || process.env.NANO_BANANA) {
+  const key = process.env.nano_banana || process.env.NANO_BANANA;
+  console.log(`✅ nano_banana encontrada (longitud: ${key?.length} caracteres)`);
+} else {
+  console.log('⚠️  nano_banana no encontrada en variables de entorno');
+  console.log(`   Buscando en: ${rootEnvPath}`);
+  console.log(`   Buscando en: ${serverEnvPath}`);
 }
 
 const app = express();
@@ -53,6 +92,7 @@ app.use('/page', publicPageRouter); // Páginas públicas (GET /page/:code)
 app.use('/api/stores', storeLocationRouter); // API de tiendas (GET /api/stores/:id, etc.)
 app.use('/api/images', imageRouter); // API de imágenes (GET /api/images/:filename)
 app.use('/api/unsplash', unsplashRouter); // API de Unsplash (GET /api/unsplash/search, POST /api/unsplash/download)
+app.use('/api/nano-banana', nanoBananaRouter); // API de Nano Banana (GET /api/nano-banana/ideas, POST /api/nano-banana/generate)
 app.use('/', staticPagesRouter); // Páginas estáticas (GET /terminos, GET /antibullying)
 
 // Health check (legacy, redirige a /api/health)

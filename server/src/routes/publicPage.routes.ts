@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getPageByCode, getOrCreateDemoPage } from '../services/pageService.js';
-import { renderAudioPage } from '../services/templateService.js';
+import { renderAudioPage, renderCardAnimation } from '../services/templateService.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
@@ -154,6 +154,45 @@ router.get('/:code', async (req: Request, res: Response, next: NextFunction) => 
     }
 
     const html = await renderAudioPage(page);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /page/:code/animation
+ * Sirve la página de animación de tarjeta
+ */
+router.get('/:code/animation', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code } = req.params;
+    
+    // Si es la página demo, crear o obtener automáticamente
+    let page;
+    if (code === 'DEMO1234') {
+      page = await getOrCreateDemoPage();
+    } else {
+      page = await getPageByCode(code);
+    }
+
+    if (!page) {
+      throw new AppError('Página no encontrada', 404);
+    }
+
+    // Verificar si la página está expirada o destruida
+    const expirationDate = page.expirationDate ? new Date(page.expirationDate) : null;
+    const isExpired = expirationDate && new Date() > expirationDate;
+    const playCount = page.playCount || 0;
+    const maxPlays = page.maxPlays || 5;
+    const isDestroyed = playCount >= maxPlays;
+
+    if (isExpired || isDestroyed) {
+      throw new AppError('Esta tarjeta ha sido eliminada', 404);
+    }
+
+    const html = await renderCardAnimation(page);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
   } catch (error) {
