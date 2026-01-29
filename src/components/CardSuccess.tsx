@@ -1,6 +1,7 @@
 import { CheckCircle, Download, Copy, Check, X, Save, DollarSign } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { getCardUrl } from '../utils/cardCode';
+import { Footer } from './Footer';
 
 interface CardSuccessProps {
   code: string;
@@ -209,6 +210,7 @@ export function CardSuccess({ code, onCreateAnother }: CardSuccessProps) {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
     </div>
   );

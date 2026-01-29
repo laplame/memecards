@@ -18,6 +18,11 @@ function getGeminiApiKey(): string | undefined {
 export interface NanoBananaImageResponse {
   success: boolean;
   imageUrl?: string;
+  usage?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  };
   error?: string;
 }
 
@@ -81,10 +86,19 @@ export async function generateImageWithNanoBanana(
           const imageData = part.inlineData.data;
           const mimeType = part.inlineData.mimeType || 'image/png';
           const imageUrl = `data:${mimeType};base64,${imageData}`;
+
+          const usage = data.usageMetadata
+            ? {
+                promptTokenCount: data.usageMetadata.promptTokenCount,
+                candidatesTokenCount: data.usageMetadata.candidatesTokenCount,
+                totalTokenCount: data.usageMetadata.totalTokenCount,
+              }
+            : undefined;
           
           return {
             success: true,
             imageUrl,
+            usage,
           };
         }
       }
@@ -102,92 +116,164 @@ export async function generateImageWithNanoBanana(
 
 /**
  * Lista de 14 ideas predefinidas para generar imágenes
- * Temáticas: 14 de febrero, amor y amistad, cumpleaños
- * Los prompts son específicos con solo 4 palabras de texto relacionadas con San Valentín
+ * Ahora soporta múltiples ocasiones (San Valentín, Día de la Madre, Día del Padre, Cumpleaños, etc.)
+ * Nota: mantenemos prompts cortos (4 palabras) para consistencia y control.
  */
 export const NANO_BANANA_IDEAS = [
   {
     id: 1,
     title: 'Corazones románticos',
     prompt: 'San Valentín corazones rojos',
-    category: '14 de febrero'
+    category: '14 de febrero',
+    occasion: 'valentine',
   },
   {
     id: 2,
     title: 'Rosa roja clásica',
     prompt: 'San Valentín rosa roja',
-    category: '14 de febrero'
+    category: '14 de febrero',
+    occasion: 'valentine',
   },
   {
     id: 3,
     title: 'Cupido y flechas',
     prompt: 'San Valentín cupido amor',
-    category: '14 de febrero'
+    category: '14 de febrero',
+    occasion: 'valentine',
   },
   {
     id: 4,
     title: 'Chocolates y flores',
     prompt: 'San Valentín chocolates flores',
-    category: '14 de febrero'
+    category: '14 de febrero',
+    occasion: 'valentine',
   },
   {
     id: 5,
     title: 'Amigos abrazándose',
     prompt: 'San Valentín amigos abrazo',
-    category: 'Amor y amistad'
+    category: 'Amor y amistad',
+    occasion: 'valentine',
   },
   {
     id: 6,
     title: 'Manos entrelazadas',
     prompt: 'San Valentín manos juntas',
-    category: 'Amor y amistad'
+    category: 'Amor y amistad',
+    occasion: 'valentine',
   },
   {
     id: 7,
     title: 'Corazones de amistad',
     prompt: 'San Valentín amistad corazones',
-    category: 'Amor y amistad'
+    category: 'Amor y amistad',
+    occasion: 'valentine',
   },
   {
     id: 8,
     title: 'Regalo de amistad',
     prompt: 'San Valentín regalo amistad',
-    category: 'Amor y amistad'
+    category: 'Amor y amistad',
+    occasion: 'valentine',
   },
   {
     id: 9,
     title: 'Pastel de cumpleaños',
-    prompt: 'San Valentín pastel cumpleaños',
-    category: 'Cumpleaños'
+    prompt: 'Cumpleaños pastel velas',
+    category: 'Cumpleaños',
+    occasion: 'birthday',
   },
   {
     id: 10,
     title: 'Globos de cumpleaños',
-    prompt: 'San Valentín globos fiesta',
-    category: 'Cumpleaños'
+    prompt: 'Cumpleaños globos coloridos fiesta',
+    category: 'Cumpleaños',
+    occasion: 'birthday',
   },
   {
     id: 11,
     title: 'Confeti y celebración',
-    prompt: 'San Valentín confeti celebración',
-    category: 'Cumpleaños'
+    prompt: 'Cumpleaños confeti alegría brillante',
+    category: 'Cumpleaños',
+    occasion: 'birthday',
   },
   {
     id: 12,
     title: 'Regalo de cumpleaños',
-    prompt: 'San Valentín regalo cumpleaños',
-    category: 'Cumpleaños'
+    prompt: 'Cumpleaños regalo sorpresa moño',
+    category: 'Cumpleaños',
+    occasion: 'birthday',
   },
   {
     id: 13,
     title: 'Velas de cumpleaños',
-    prompt: 'San Valentín velas pastel',
-    category: 'Cumpleaños'
+    prompt: 'Cumpleaños velas pastel dorado',
+    category: 'Cumpleaños',
+    occasion: 'birthday',
   },
   {
     id: 14,
     title: 'Fiesta de cumpleaños',
-    prompt: 'San Valentín fiesta cumpleaños',
-    category: 'Cumpleaños'
+    prompt: 'Cumpleaños fiesta luces música',
+    category: 'Cumpleaños',
+    occasion: 'birthday',
+  },
+  // Día de la Madre
+  {
+    id: 15,
+    title: 'Flores para mamá',
+    prompt: 'Día Madre flores rosas',
+    category: 'Día de la madre',
+    occasion: 'mothers-day',
+  },
+  {
+    id: 16,
+    title: 'Abrazo con mamá',
+    prompt: 'Mamá abrazo tierno amor',
+    category: 'Día de la madre',
+    occasion: 'mothers-day',
+  },
+  {
+    id: 17,
+    title: 'Carta para mamá',
+    prompt: 'Mamá carta corazón gracias',
+    category: 'Día de la madre',
+    occasion: 'mothers-day',
+  },
+  {
+    id: 18,
+    title: 'Desayuno sorpresa',
+    prompt: 'Mamá desayuno sorpresa feliz',
+    category: 'Día de la madre',
+    occasion: 'mothers-day',
+  },
+  // Día del Padre
+  {
+    id: 19,
+    title: 'Herramientas para papá',
+    prompt: 'Día Padre herramientas regalo',
+    category: 'Día del padre',
+    occasion: 'fathers-day',
+  },
+  {
+    id: 20,
+    title: 'Papá y familia',
+    prompt: 'Papá familia abrazo orgullo',
+    category: 'Día del padre',
+    occasion: 'fathers-day',
+  },
+  {
+    id: 21,
+    title: 'Tarjeta para papá',
+    prompt: 'Papá gracias corazón fuerte',
+    category: 'Día del padre',
+    occasion: 'fathers-day',
+  },
+  {
+    id: 22,
+    title: 'Café con papá',
+    prompt: 'Papá café charla feliz',
+    category: 'Día del padre',
+    occasion: 'fathers-day',
   },
 ];

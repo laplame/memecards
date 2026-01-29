@@ -1,4 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
+import { Footer } from './Footer';
+import { Header } from './Header';
 
 export function TermsAndConditions() {
   const handleBack = () => {
@@ -6,8 +8,9 @@ export function TermsAndConditions() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex flex-col">
+      <Header title="Términos y Condiciones" />
+      <div className="container mx-auto px-4 max-w-4xl py-8 flex-1">
         <button
           onClick={handleBack}
           className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
@@ -87,6 +90,7 @@ export function TermsAndConditions() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

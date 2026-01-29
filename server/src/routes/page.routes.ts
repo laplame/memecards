@@ -448,7 +448,7 @@ router.post('/:code/play', async (req: Request, res: Response, next: NextFunctio
 
 /**
  * DELETE /api/pages/:code
- * Elimina una página por código
+ * Elimina una página por código (no elimina tarjetas marcadas como test)
  */
 router.delete('/:code', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -456,12 +456,40 @@ router.delete('/:code', async (req: Request, res: Response, next: NextFunction) 
     const deleted = await deletePageByCode(code);
 
     if (!deleted) {
+      const page = await getPageByCode(code);
+      if (page?.isTest) {
+        throw new AppError('No se puede eliminar una tarjeta marcada como test', 403);
+      }
       throw new AppError('Página no encontrada', 404);
     }
 
     res.json({
       success: true,
       message: 'Página eliminada correctamente',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * PATCH /api/pages/:code/test
+ * Marca o desmarca una tarjeta como test
+ */
+router.patch('/:code/test', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code } = req.params;
+    const { isTest } = req.body;
+    
+    const updatedPage = await updatePageByCode(code, { isTest: !!isTest });
+    
+    if (!updatedPage) {
+      throw new AppError('Página no encontrada', 404);
+    }
+    
+    res.json({
+      success: true,
+      data: updatedPage,
     });
   } catch (error) {
     next(error);

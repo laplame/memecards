@@ -13,6 +13,7 @@ import { imageRouter } from './routes/image.routes.js';
 import { unsplashRouter } from './routes/unsplash.routes.js';
 import { nanoBananaRouter } from './routes/nanoBanana.routes.js';
 import { staticPagesRouter } from './routes/staticPages.routes.js';
+import { feedRouter } from './routes/feed.routes.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -93,6 +94,7 @@ app.use('/api/stores', storeLocationRouter); // API de tiendas (GET /api/stores/
 app.use('/api/images', imageRouter); // API de imágenes (GET /api/images/:filename)
 app.use('/api/unsplash', unsplashRouter); // API de Unsplash (GET /api/unsplash/search, POST /api/unsplash/download)
 app.use('/api/nano-banana', nanoBananaRouter); // API de Nano Banana (GET /api/nano-banana/ideas, POST /api/nano-banana/generate)
+app.use('/api/feed', feedRouter); // API de Feed Social (GET /api/feed, POST /api/feed/:code/vote, etc.)
 app.use('/', staticPagesRouter); // Páginas estáticas (GET /terminos, GET /antibullying)
 
 // Health check (legacy, redirige a /api/health)
@@ -107,10 +109,12 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     // Conectar a MongoDB
-    if (process.env.MONGODB_ATLAS || process.env.MONGODB_URI) {
-      await connectDatabase();
+    const mongoConfigured = !!(process.env.MONGODB_ATLAS || process.env.MONGODB_URI);
+    let mongoConnected = false;
+    if (mongoConfigured) {
+      mongoConnected = await connectDatabase();
     } else {
-      console.warn('⚠️  MONGODB_ATLAS no configurada, algunas funcionalidades no estarán disponibles');
+      console.warn('⚠️  MONGODB_ATLAS/MONGODB_URI no configurada, algunas funcionalidades no estarán disponibles');
     }
 
     // Iniciar servidor Express
@@ -118,7 +122,7 @@ const startServer = async () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📁 Upload directory: ${process.env.UPLOAD_DIR || './uploads'}`);
       console.log(`🎵 Processed directory: ${process.env.PROCESSED_DIR || './processed'}`);
-      console.log(`🗄️  MongoDB: ${process.env.MONGODB_ATLAS || process.env.MONGODB_URI ? 'Conectado' : 'No configurado'}`);
+      console.log(`🗄️  MongoDB: ${mongoConnected ? 'Conectado' : (mongoConfigured ? 'No disponible' : 'No configurado')}`);
     });
   } catch (error) {
     console.error('❌ Error al iniciar el servidor:', error);

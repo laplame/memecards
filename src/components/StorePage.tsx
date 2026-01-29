@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Phone, Clock, ExternalLink, Navigation, Loader2, ArrowLeft } from 'lucide-react';
+import { Footer } from './Footer';
 
 interface StoreData {
   _id: string;
@@ -237,6 +238,7 @@ export function StorePage({ storeId }: StorePageProps) {
           <p>ID de la tienda: <span className="font-mono text-xs">{store._id}</span></p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

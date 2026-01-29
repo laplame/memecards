@@ -30,6 +30,8 @@ export interface AudioPage {
   hasPin?: boolean;
   // Usar imagen como wallpaper/fondo
   useImageAsWallpaper?: boolean;
+  // Marcar como tarjeta de prueba (no se borra)
+  isTest?: boolean;
 }
 
 const pagesDir = process.env.PAGES_DIR || './pages-data';
@@ -285,18 +287,24 @@ export async function getAllPages(): Promise<AudioPage[]> {
 
 /**
  * Elimina una página por su código
+ * No elimina tarjetas marcadas como test
  */
 export async function deletePageByCode(code: string): Promise<boolean> {
   const pages = await loadPages();
-  const initialLength = pages.length;
-  const filteredPages = pages.filter((p) => p.code !== code);
+  const page = pages.find((p) => p.code === code);
   
-  if (filteredPages.length < initialLength) {
-    await savePages(filteredPages);
-    return true;
+  if (!page) {
+    return false;
   }
   
-  return false;
+  // No eliminar si está marcada como test
+  if (page.isTest) {
+    throw new Error('No se puede eliminar una tarjeta marcada como test');
+  }
+  
+  const filteredPages = pages.filter((p) => p.code !== code);
+  await savePages(filteredPages);
+  return true;
 }
 
 /**
@@ -318,6 +326,7 @@ export async function updatePageByCode(
     videoUrl?: string;
     pin?: string;
     useImageAsWallpaper?: boolean;
+    isTest?: boolean;
   }
 ): Promise<AudioPage | null> {
   const pages = await loadPages();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Phone, Clock, ExternalLink, Navigation, Search, Filter, Download, RefreshCw, Plus, X, Navigation2, Loader2 } from 'lucide-react';
 import { PinLock } from './PinLock';
+import { Footer } from './Footer';
 
 interface StoreData {
   _id: string;
@@ -634,6 +635,7 @@ export function StoresDashboard() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

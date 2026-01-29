@@ -371,6 +371,9 @@
       inset: 0;
       z-index: 5000;
       background: linear-gradient(135deg, #fce4ec 0%, #ffe0e6 100%);
+      /* Permitir scroll (especialmente en móvil) */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       align-items: center;
       justify-content: center;
       flex-direction: column;
@@ -1403,7 +1406,7 @@
               <!-- Ideas de Nano Banana (oculto inicialmente) -->
               <div id="nanoBananaContainer" style="display: none; margin-top: 12px; padding: 16px; background: linear-gradient(135deg, #fff0f5 0%, #ffe0e6 100%); border: 2px solid #ff6b9d; border-radius: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <h3 style="font-size: 16px; font-weight: 700; color: #c44569; margin: 0;">Genera tu imagen con IA:</h3>
+                  <h3 id="nanoBananaTitle" style="font-size: 16px; font-weight: 700; color: #c44569; margin: 0;">Genera tu imagen con IA:</h3>
                   <button
                     type="button"
                     id="closeNanoBananaButton"
@@ -1411,6 +1414,19 @@
                   >
                     ✕
                   </button>
+                </div>
+
+                <!-- Ocasión -->
+                <div style="margin-bottom: 12px; display: grid; grid-template-columns: 1fr; gap: 6px;">
+                  <label id="nanoBananaOccasionLabel" style="display: block; font-size: 12px; font-weight: 700; color: #c44569;">
+                    Ocasión
+                  </label>
+                  <select id="nanoBananaOccasionSelect" style="width: 100%; padding: 10px; border: 2px solid #ffb3d1; border-radius: 10px; font-size: 13px; background: white;">
+                    <option value="valentine">San Valentín</option>
+                    <option value="mothers-day">Día de la Madre</option>
+                    <option value="fathers-day">Día del Padre</option>
+                    <option value="birthday">Cumpleaños</option>
+                  </select>
                 </div>
                 
                 <!-- Campo de texto personalizado -->
@@ -1440,7 +1456,7 @@
                   </button>
                 </div>
                 
-                <div style="text-align: center; margin: 12px 0; color: #c44569; font-size: 12px; font-weight: 600;">
+                <div id="nanoBananaPresetLabel" style="text-align: center; margin: 12px 0; color: #c44569; font-size: 12px; font-weight: 600;">
                   O elige una idea predefinida:
                 </div>
                 
@@ -1475,13 +1491,13 @@
           <div class="form-group">
             <label for="videoUrl">URL de Video (Opcional)</label>
             <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
-              Comparte un video de Facebook, Instagram o TikTok. Solo pega la URL del video.
+              Comparte un video de Facebook, Instagram, TikTok o Twitter/X. Solo pega la URL del video.
             </p>
             <input 
               type="url" 
               id="videoUrl" 
               name="videoUrl" 
-              placeholder="https://www.facebook.com/... o https://www.instagram.com/... o https://www.tiktok.com/..."
+              placeholder="https://www.facebook.com/... o https://www.instagram.com/... o https://www.tiktok.com/... o https://twitter.com/..."
               style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;"
             >
             
@@ -1632,7 +1648,7 @@
         
         <!-- Imagen (si existe) - Siempre se muestra dentro de la carta -->
         <div id="displayImage" style="margin: 30px 0; text-align: center; display: none; visibility: visible; opacity: 1;">
-          <img id="displayImageImg" src="" alt="Foto personalizada" style="max-width: 100%; max-height: 500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); object-fit: contain; display: block; visibility: visible; opacity: 1; border: 1px solid rgba(0,0,0,0.05); width: 100%; height: auto;">
+          <img id="displayImageImg" src="" alt="Foto personalizada" style="max-width: 100%; max-height: 500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); object-fit: contain; display: block; visibility: visible; opacity: 1; border: 1px solid rgba(0,0,0,0.05); width: 100%; height: auto; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         </div>
         
         <!-- Video (si existe) -->
@@ -1716,7 +1732,7 @@
         </p>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
         <!-- Instagram -->
         <button 
           id="shareInstagram"
@@ -1748,6 +1764,17 @@
         >
           <span style="font-size: 24px;">💬</span>
           <span>WhatsApp</span>
+        </button>
+
+        <!-- Twitter/X -->
+        <button 
+          id="shareTwitter"
+          style="padding: 16px; background: #000000; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s;"
+          onmouseover="this.style.transform='scale(1.05)'"
+          onmouseout="this.style.transform='scale(1)'"
+        >
+          <span style="font-size: 24px;">𝕏</span>
+          <span>Twitter</span>
         </button>
 
         <!-- Copiar URL -->
@@ -1806,6 +1833,14 @@
 
     const displayImage = document.getElementById('displayImage');
     const displayImageImg = document.getElementById('displayImageImg');
+
+    // Hacer la imagen clickeable para abrir la URL de la tarjeta
+    if (displayImageImg) {
+      displayImageImg.addEventListener('click', () => {
+        const cardUrl = `${PAGE_DATA.baseUrl}/page/${PAGE_DATA.code}`;
+        window.open(cardUrl, '_blank');
+      });
+    }
 
     const personalizationForm = document.getElementById('personalizationForm');
     const playerView = document.getElementById('playerView');
@@ -2150,6 +2185,16 @@
     }
 
     // Función para generar imagen con Nano Banana (definida antes de usarse)
+    let nanoBananaOccasion = 'valentine';
+
+    function getNanoBananaOccasionPrefix(occasion) {
+      if (occasion === 'valentine') return 'San Valentín';
+      if (occasion === 'mothers-day') return 'Día Madre';
+      if (occasion === 'fathers-day') return 'Día Padre';
+      if (occasion === 'birthday') return 'Cumpleaños';
+      return '';
+    }
+
     async function generateNanoBananaImage(prompt) {
       // Verificar si ya se usó para ESTA tarjeta específica (usando el código único)
       const cardCode = PAGE_DATA.code;
@@ -2171,10 +2216,15 @@
       showNanoBananaLoadingModal();
 
       try {
-        // Agregar "San Valentín" al inicio del prompt si no lo tiene
+        // Prefijo por ocasión (solo si el prompt no lo incluye ya)
         let finalPrompt = prompt.trim();
-        if (!finalPrompt.toLowerCase().startsWith('san valentín') && !finalPrompt.toLowerCase().startsWith('san valentin')) {
-          finalPrompt = `San Valentín ${finalPrompt}`;
+        const prefix = getNanoBananaOccasionPrefix(nanoBananaOccasion);
+        if (prefix) {
+          const p = finalPrompt.toLowerCase();
+          const pref = prefix.toLowerCase();
+          if (!p.startsWith(pref)) {
+            finalPrompt = `${prefix} ${finalPrompt}`;
+          }
         }
 
         const generateResponse = await fetch(`${PAGE_DATA.baseUrl}/api/nano-banana/generate`, {
@@ -2241,13 +2291,60 @@
         
         if (nanoBananaContainer) {
           nanoBananaContainer.style.display = 'block';
+
+          const occasionSelect = document.getElementById('nanoBananaOccasionSelect');
+          if (occasionSelect) {
+            nanoBananaOccasion = occasionSelect.value || 'valentine';
+            occasionSelect.onchange = async () => {
+              nanoBananaOccasion = occasionSelect.value || 'valentine';
+              // recargar ideas
+              if (nanoBananaIdeasGrid) {
+                nanoBananaIdeasGrid.innerHTML = '<p style="text-align: center; color: #c44569;">Cargando ideas...</p>';
+              }
+              try {
+                const response = await fetch(`${PAGE_DATA.baseUrl}/api/nano-banana/ideas?occasion=${encodeURIComponent(nanoBananaOccasion)}`);
+                if (!response.ok) throw new Error('Error al cargar ideas');
+                const data = await response.json();
+                const ideas = data.data || [];
+                if (nanoBananaIdeasGrid) nanoBananaIdeasGrid.innerHTML = '';
+                ideas.forEach((idea) => {
+                  const ideaCard = document.createElement('div');
+                  ideaCard.style.cssText = 'padding: 12px; background: white; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; text-align: center;';
+                  ideaCard.innerHTML = `
+                    <div style="font-size: 20px; margin-bottom: 6px;">🍌✨</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #c44569; margin-bottom: 4px;">${idea.title}</div>
+                    <div style="font-size: 10px; color: #888;">${idea.category || ''}</div>
+                  `;
+                  ideaCard.addEventListener('mouseenter', () => {
+                    ideaCard.style.borderColor = '#ff6b9d';
+                    ideaCard.style.transform = 'scale(1.05)';
+                    ideaCard.style.boxShadow = '0 4px 12px rgba(255, 107, 157, 0.3)';
+                  });
+                  ideaCard.addEventListener('mouseleave', () => {
+                    ideaCard.style.borderColor = 'transparent';
+                    ideaCard.style.transform = 'scale(1)';
+                    ideaCard.style.boxShadow = 'none';
+                  });
+                  ideaCard.addEventListener('click', async () => {
+                    await generateNanoBananaImage(idea.prompt);
+                  });
+                  nanoBananaIdeasGrid.appendChild(ideaCard);
+                });
+              } catch (error) {
+                console.error('Error loading ideas:', error);
+                if (nanoBananaIdeasGrid) {
+                  nanoBananaIdeasGrid.innerHTML = '<p style="text-align: center; color: #dc2626;">Error al cargar ideas. Intenta de nuevo.</p>';
+                }
+              }
+            };
+          }
           
           // Cargar las 14 ideas predefinidas
           if (nanoBananaIdeasGrid) {
             nanoBananaIdeasGrid.innerHTML = '<p style="text-align: center; color: #c44569;">Cargando ideas...</p>';
             
             try {
-              const response = await fetch(`${PAGE_DATA.baseUrl}/api/nano-banana/ideas`);
+              const response = await fetch(`${PAGE_DATA.baseUrl}/api/nano-banana/ideas?occasion=${encodeURIComponent(nanoBananaOccasion)}`);
               if (!response.ok) throw new Error('Error al cargar ideas');
               
               const data = await response.json();
@@ -2362,6 +2459,88 @@
       return null;
     }
 
+    // Función para detectar la plataforma del video
+    function detectVideoPlatform(url) {
+      if (!url) return null;
+      
+      const normalizedUrl = url.toLowerCase().trim();
+      
+      // Facebook (incluye variaciones: facebook.com, fb.com, m.facebook.com, www.facebook.com)
+      if (normalizedUrl.includes('facebook.com') || normalizedUrl.includes('fb.com')) {
+        return 'facebook';
+      }
+      
+      // Instagram (incluye variaciones: instagram.com, www.instagram.com)
+      if (normalizedUrl.includes('instagram.com')) {
+        return 'instagram';
+      }
+      
+      // TikTok (incluye variaciones: tiktok.com, www.tiktok.com, vm.tiktok.com)
+      if (normalizedUrl.includes('tiktok.com')) {
+        return 'tiktok';
+      }
+      
+      // Twitter/X (incluye variaciones: twitter.com, x.com, www.twitter.com, www.x.com)
+      if (normalizedUrl.includes('twitter.com') || normalizedUrl.includes('x.com')) {
+        return 'twitter';
+      }
+      
+      return null;
+    }
+
+    // Función helper para cargar video en un contenedor
+    async function loadVideoInContainer(videoUrl, containerElement, displayElement) {
+      if (!videoUrl || !containerElement) return false;
+      
+      const platform = detectVideoPlatform(videoUrl);
+      
+      if (!platform) {
+        console.warn('Plataforma de video no soportada:', videoUrl);
+        return false;
+      }
+
+      try {
+        if (platform === 'facebook') {
+          const iframeUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=500&height=281`;
+          containerElement.innerHTML = `<iframe src="${iframeUrl}" width="500" height="281" style="border:none;overflow:hidden;width:100%;max-width:500px;height:281px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+          if (displayElement) displayElement.style.display = 'block';
+          return true;
+        } else if (platform === 'instagram') {
+          const response = await fetch(`https://api.instagram.com/oembed?url=${encodeURIComponent(videoUrl)}`);
+          if (!response.ok) throw new Error('Instagram oEmbed failed');
+          const data = await response.json();
+          if (data.html) {
+            containerElement.innerHTML = data.html;
+            if (displayElement) displayElement.style.display = 'block';
+            return true;
+          }
+        } else if (platform === 'tiktok') {
+          const response = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`);
+          if (!response.ok) throw new Error('TikTok oEmbed failed');
+          const data = await response.json();
+          if (data.html) {
+            containerElement.innerHTML = data.html;
+            if (displayElement) displayElement.style.display = 'block';
+            return true;
+          }
+        } else if (platform === 'twitter') {
+          const response = await fetch(`https://publish.twitter.com/oembed?url=${encodeURIComponent(videoUrl)}`);
+          if (!response.ok) throw new Error('Twitter oEmbed failed');
+          const data = await response.json();
+          if (data.html) {
+            containerElement.innerHTML = data.html;
+            if (displayElement) displayElement.style.display = 'block';
+            return true;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading video:', error);
+        return false;
+      }
+      
+      return false;
+    }
+
     // Función para cargar preview del video
     async function loadVideoPreview(url) {
       if (!url || !url.trim()) {
@@ -2380,39 +2559,62 @@
       }
 
       try {
+        const platform = detectVideoPlatform(currentVideoUrl);
+        
+        if (!platform) {
+          if (videoPreview) {
+            videoPreview.innerHTML = '<p style="color: white;">URL no soportada. Solo se aceptan videos de Facebook, Instagram, TikTok o Twitter/X.</p>';
+          }
+          return;
+        }
+
         // Para Facebook, usar iframe directamente
-        if (currentVideoUrl.includes('facebook.com') || currentVideoUrl.includes('fb.com')) {
+        if (platform === 'facebook') {
           const iframeUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(currentVideoUrl)}&show_text=false&width=500&height=281`;
           if (videoPreview) {
             videoPreview.innerHTML = `<iframe src="${iframeUrl}" width="500" height="281" style="border:none;overflow:hidden;width:100%;max-width:500px;height:281px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
           }
         } 
         // Para Instagram, usar oEmbed
-        else if (currentVideoUrl.includes('instagram.com')) {
+        else if (platform === 'instagram') {
           const oembedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(currentVideoUrl)}`;
           const response = await fetch(oembedUrl);
+          if (!response.ok) {
+            throw new Error('Instagram oEmbed failed');
+          }
           const data = await response.json();
           if (videoPreview) {
             videoPreview.innerHTML = data.html || `<p style="color: white;">Preview no disponible</p>`;
           }
         }
         // Para TikTok, usar oEmbed
-        else if (currentVideoUrl.includes('tiktok.com')) {
+        else if (platform === 'tiktok') {
           const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(currentVideoUrl)}`;
           const response = await fetch(oembedUrl);
+          if (!response.ok) {
+            throw new Error('TikTok oEmbed failed');
+          }
           const data = await response.json();
           if (videoPreview) {
             videoPreview.innerHTML = data.html || `<p style="color: white;">Preview no disponible</p>`;
           }
-        } else {
+        }
+        // Para Twitter/X, usar oEmbed
+        else if (platform === 'twitter') {
+          const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(currentVideoUrl)}`;
+          const response = await fetch(oembedUrl);
+          if (!response.ok) {
+            throw new Error('Twitter oEmbed failed');
+          }
+          const data = await response.json();
           if (videoPreview) {
-            videoPreview.innerHTML = '<p style="color: white;">URL no soportada. Solo se aceptan videos de Facebook, Instagram o TikTok.</p>';
+            videoPreview.innerHTML = data.html || `<p style="color: white;">Preview no disponible</p>`;
           }
         }
       } catch (error) {
         console.error('Error loading video preview:', error);
         if (videoPreview) {
-          videoPreview.innerHTML = '<p style="color: white;">Error al cargar preview. Verifica que la URL sea válida.</p>';
+          videoPreview.innerHTML = '<p style="color: white;">Error al cargar preview. Verifica que la URL sea válida y que el video sea público.</p>';
         }
       }
     }
@@ -2743,33 +2945,7 @@
       const displayVideo = document.getElementById('displayVideo');
       const displayVideoContainer = document.getElementById('displayVideoContainer');
       if (PAGE_DATA.videoUrl && displayVideo && displayVideoContainer) {
-        const videoUrl = PAGE_DATA.videoUrl;
-        
-        if (videoUrl.includes('facebook.com') || videoUrl.includes('fb.com')) {
-          const iframeUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=500&height=281`;
-          displayVideoContainer.innerHTML = `<iframe src="${iframeUrl}" width="500" height="281" style="border:none;overflow:hidden;width:100%;max-width:500px;height:281px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
-          displayVideo.style.display = 'block';
-        } else if (videoUrl.includes('instagram.com')) {
-          fetch(`https://api.instagram.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.html && displayVideoContainer) {
-                displayVideoContainer.innerHTML = data.html;
-                if (displayVideo) displayVideo.style.display = 'block';
-              }
-            })
-            .catch(err => console.error('Error loading Instagram video:', err));
-        } else if (videoUrl.includes('tiktok.com')) {
-          fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.html && displayVideoContainer) {
-                displayVideoContainer.innerHTML = data.html;
-                if (displayVideo) displayVideo.style.display = 'block';
-              }
-            })
-            .catch(err => console.error('Error loading TikTok video:', err));
-        }
+        loadVideoInContainer(PAGE_DATA.videoUrl, displayVideoContainer, displayVideo);
       }
     }
 
@@ -2831,33 +3007,7 @@
       const displayVideo = document.getElementById('displayVideo');
       const displayVideoContainer = document.getElementById('displayVideoContainer');
       if (PAGE_DATA.videoUrl && displayVideo && displayVideoContainer) {
-        const videoUrl = PAGE_DATA.videoUrl;
-        
-        if (videoUrl.includes('facebook.com') || videoUrl.includes('fb.com')) {
-          const iframeUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=500&height=281`;
-          displayVideoContainer.innerHTML = `<iframe src="${iframeUrl}" width="500" height="281" style="border:none;overflow:hidden;width:100%;max-width:500px;height:281px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
-          displayVideo.style.display = 'block';
-        } else if (videoUrl.includes('instagram.com')) {
-          fetch(`https://api.instagram.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.html && displayVideoContainer) {
-                displayVideoContainer.innerHTML = data.html;
-                if (displayVideo) displayVideo.style.display = 'block';
-              }
-            })
-            .catch(err => console.error('Error loading Instagram video:', err));
-        } else if (videoUrl.includes('tiktok.com')) {
-          fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.html && displayVideoContainer) {
-                displayVideoContainer.innerHTML = data.html;
-                if (displayVideo) displayVideo.style.display = 'block';
-              }
-            })
-            .catch(err => console.error('Error loading TikTok video:', err));
-        }
+        loadVideoInContainer(PAGE_DATA.videoUrl, displayVideoContainer, displayVideo);
       }
 
       // Mostrar animación del sobre primero (en lugar de mostrar directamente el contenido)
@@ -3068,33 +3218,7 @@
               const displayVideo = document.getElementById('displayVideo');
               const displayVideoContainer = document.getElementById('displayVideoContainer');
               if (PAGE_DATA.videoUrl && displayVideo && displayVideoContainer) {
-                const videoUrl = PAGE_DATA.videoUrl;
-                
-                if (videoUrl.includes('facebook.com') || videoUrl.includes('fb.com')) {
-                  const iframeUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=500&height=281`;
-                  displayVideoContainer.innerHTML = `<iframe src="${iframeUrl}" width="500" height="281" style="border:none;overflow:hidden;width:100%;max-width:500px;height:281px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
-                  displayVideo.style.display = 'block';
-                } else if (videoUrl.includes('instagram.com')) {
-                  fetch(`https://api.instagram.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                      if (data.html && displayVideoContainer) {
-                        displayVideoContainer.innerHTML = data.html;
-                        if (displayVideo) displayVideo.style.display = 'block';
-                      }
-                    })
-                    .catch(err => console.error('Error loading Instagram video:', err));
-                } else if (videoUrl.includes('tiktok.com')) {
-                  fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                      if (data.html && displayVideoContainer) {
-                        displayVideoContainer.innerHTML = data.html;
-                        if (displayVideo) displayVideo.style.display = 'block';
-                      }
-                    })
-                    .catch(err => console.error('Error loading TikTok video:', err));
-                }
+                loadVideoInContainer(PAGE_DATA.videoUrl, displayVideoContainer, displayVideo);
               }
 
               updateLimitsInfo();
@@ -3535,34 +3659,7 @@
           const displayVideoContainer = document.getElementById('displayVideoContainer');
           if (data.data.videoUrl && displayVideo && displayVideoContainer) {
             PAGE_DATA.videoUrl = data.data.videoUrl;
-            const videoUrl = data.data.videoUrl;
-            
-            // Cargar preview del video
-            if (videoUrl.includes('facebook.com') || videoUrl.includes('fb.com')) {
-              const iframeUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=500&height=281`;
-              displayVideoContainer.innerHTML = `<iframe src="${iframeUrl}" width="500" height="281" style="border:none;overflow:hidden;width:100%;max-width:500px;height:281px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
-              displayVideo.style.display = 'block';
-            } else if (videoUrl.includes('instagram.com')) {
-              fetch(`https://api.instagram.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-                .then(res => res.json())
-                .then(data => {
-                  if (data.html) {
-                    displayVideoContainer.innerHTML = data.html;
-                    displayVideo.style.display = 'block';
-                  }
-                })
-                .catch(err => console.error('Error loading Instagram video:', err));
-            } else if (videoUrl.includes('tiktok.com')) {
-              fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`)
-                .then(res => res.json())
-                .then(data => {
-                  if (data.html) {
-                    displayVideoContainer.innerHTML = data.html;
-                    displayVideo.style.display = 'block';
-                  }
-                })
-                .catch(err => console.error('Error loading TikTok video:', err));
-            }
+            loadVideoInContainer(data.data.videoUrl, displayVideoContainer, displayVideo);
           }
 
           // Cambiar a vista de reproducción primero
@@ -3767,6 +3864,7 @@
       const shareInstagram = document.getElementById('shareInstagram');
       const shareFacebook = document.getElementById('shareFacebook');
       const shareWhatsApp = document.getElementById('shareWhatsApp');
+      const shareTwitter = document.getElementById('shareTwitter');
       const copyUrlBtn = document.getElementById('copyUrl');
       const copyUrlFeedback = document.getElementById('copyUrlFeedback');
 
@@ -3837,6 +3935,16 @@
           const whatsappMessage = `te mande una tarjeta virtual, da click aqui\n${shareText} - ${cardUrl}`;
           const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
           window.open(whatsappUrl, '_blank');
+        };
+      }
+
+      // Compartir en Twitter/X
+      const twitterBtn = document.getElementById('shareTwitter');
+      if (twitterBtn) {
+        twitterBtn.onclick = () => {
+          const twitterText = `${shareText} - ${cardUrl}`;
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(cardUrl)}`;
+          window.open(twitterUrl, '_blank', 'width=600,height=400');
         };
       }
 

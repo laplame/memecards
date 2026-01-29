@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { PinLock } from './PinLock';
+import { Footer } from './Footer';
+import { Header } from './Header';
 
 interface AudioPage {
   id: string;
@@ -28,6 +30,7 @@ interface AudioPage {
   description: string;
   createdAt: string;
   pageUrl: string;
+  isTest?: boolean;
 }
 
 interface StoreData {
@@ -46,14 +49,34 @@ interface StoreData {
   updatedAt: string;
 }
 
+interface NanoBananaUsageRow {
+  ts: string;
+  prompt: string;
+  ideaId: number | null;
+  usage: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  } | null;
+  userId?: string;
+}
+
 export function Dashboard() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [pages, setPages] = useState<AudioPage[]>([]);
   const [stores, setStores] = useState<StoreData[]>([]);
+  const [nanoUsage, setNanoUsage] = useState<NanoBananaUsageRow[]>([]);
+  const [nanoTotals, setNanoTotals] = useState<{ count: number; promptTokens: number; candidatesTokens: number; totalTokens: number }>({
+    count: 0,
+    promptTokens: 0,
+    candidatesTokens: 0,
+    totalTokens: 0,
+  });
+  const [nanoLoading, setNanoLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [storesLoading, setStoresLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'pages' | 'stores'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'stores' | 'nano'>('pages');
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const canvasRefs = useRef<Record<string, HTMLCanvasElement>>({});
@@ -73,6 +96,12 @@ export function Dashboard() {
       fetchStores();
     }
   }, [isUnlocked]);
+
+  useEffect(() => {
+    if (isUnlocked && activeTab === 'nano') {
+      fetchNanoUsage();
+    }
+  }, [isUnlocked, activeTab]);
 
   useEffect(() => {
     // Generar QR codes para todas las páginas
@@ -148,6 +177,23 @@ export function Dashboard() {
     }
   };
 
+  const fetchNanoUsage = async () => {
+    try {
+      setNanoLoading(true);
+      const response = await fetch(`${backendUrl}/api/nano-banana/usage?limit=200`);
+      const data = await response.json();
+      if (data.success) {
+        setNanoUsage(data.data?.recent || []);
+        setNanoTotals(data.data?.totals || { count: 0, promptTokens: 0, candidatesTokens: 0, totalTokens: 0 });
+      }
+    } catch (e) {
+      console.error('Error fetching nano-banana usage:', e);
+      alert('Error al cargar el uso de Nano Banana');
+    } finally {
+      setNanoLoading(false);
+    }
+  };
+
   const getGoogleMapsUrl = (lat: number, lng: number) => {
     return `https://www.google.com/maps?q=${lat},${lng}`;
   };
@@ -197,6 +243,12 @@ export function Dashboard() {
   };
 
   const deletePage = async (code: string) => {
+    const page = pages.find((p) => p.code === code);
+    if (page?.isTest) {
+      alert('No se puede eliminar una tarjeta marcada como test. Primero desmárcala como test.');
+      return;
+    }
+
     if (!confirm(`¿Estás seguro de eliminar la página ${code}?`)) return;
 
     try {
@@ -207,11 +259,38 @@ export function Dashboard() {
       if (response.ok) {
         setPages((prev) => prev.filter((p) => p.code !== code));
       } else {
-        alert('Error al eliminar la página');
+        const data = await response.json();
+        alert(data.error?.message || 'Error al eliminar la página');
       }
     } catch (error) {
       console.error('Error deleting page:', error);
       alert('Error al eliminar la página');
+    }
+  };
+
+  const toggleTest = async (code: string) => {
+    const page = pages.find((p) => p.code === code);
+    const newTestStatus = !page?.isTest;
+
+    try {
+      const response = await fetch(`${backendUrl}/api/pages/${code}/test`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isTest: newTestStatus }),
+      });
+
+      if (response.ok) {
+        setPages((prev) =>
+          prev.map((p) => (p.code === code ? { ...p, isTest: newTestStatus } : p))
+        );
+      } else {
+        alert('Error al actualizar el estado de test');
+      }
+    } catch (error) {
+      console.error('Error toggling test:', error);
+      alert('Error al actualizar el estado de test');
     }
   };
 
@@ -289,9 +368,10 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex flex-col">
+      <Header title="Dashboard" />
+      <div className="container mx-auto px-4 max-w-7xl py-8 flex-1">
+        {/* Dashboard Header Card */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-3">
@@ -310,8 +390,10 @@ export function Dashboard() {
                       <span className="text-xs block">({filteredPages.length} filtradas)</span>
                     )}
                   </>
-                ) : (
+                ) : activeTab === 'stores' ? (
                   `Tiendas (${stores.length})`
+                ) : (
+                  `Nano Banana (${nanoTotals.count})`
                 )}
               </div>
               {activeTab === 'pages' && (
@@ -333,11 +415,11 @@ export function Dashboard() {
                 </a>
               )}
               <button
-                onClick={activeTab === 'pages' ? fetchPages : fetchStores}
-                disabled={loading || storesLoading}
+                onClick={activeTab === 'pages' ? fetchPages : activeTab === 'stores' ? fetchStores : fetchNanoUsage}
+                disabled={loading || storesLoading || nanoLoading}
                 className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className={`w-4 h-4 ${(loading || storesLoading) ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${(loading || storesLoading || nanoLoading) ? 'animate-spin' : ''}`} />
                 <span>Actualizar</span>
               </button>
             </div>
@@ -364,6 +446,16 @@ export function Dashboard() {
               }`}
             >
               Tiendas ({stores.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('nano')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'nano'
+                  ? 'text-red-600 border-b-2 border-red-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Uso Nano Banana
             </button>
           </div>
         </div>
@@ -470,22 +562,115 @@ export function Dashboard() {
           </div>
         )}
 
-        {/* Search */}
-        <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Buscar por código, título o descripción..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
+        {/* Search (solo pages/stores) */}
+        {activeTab !== 'nano' && (
+          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Buscar por código, título o descripción..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content based on active tab */}
-        {activeTab === 'pages' ? (
+        {activeTab === 'nano' ? (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Uso Nano Banana</h2>
+              <p className="text-gray-600 text-sm mb-4">
+                Totales calculados del log reciente (últimas 200 generaciones).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                  <div className="text-xs text-red-700 font-semibold">Generaciones</div>
+                  <div className="text-2xl font-bold text-gray-900">{nanoTotals.count}</div>
+                </div>
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <div className="text-xs text-blue-700 font-semibold">Prompt tokens</div>
+                  <div className="text-2xl font-bold text-gray-900">{nanoTotals.promptTokens}</div>
+                </div>
+                <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
+                  <div className="text-xs text-purple-700 font-semibold">Candidate tokens</div>
+                  <div className="text-2xl font-bold text-gray-900">{nanoTotals.candidatesTokens}</div>
+                </div>
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                  <div className="text-xs text-emerald-700 font-semibold">Total tokens</div>
+                  <div className="text-2xl font-bold text-gray-900">{nanoTotals.totalTokens}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-800">Últimos prompts</h3>
+                <button
+                  onClick={fetchNanoUsage}
+                  disabled={nanoLoading}
+                  className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+                >
+                  {nanoLoading ? 'Cargando…' : 'Recargar'}
+                </button>
+              </div>
+
+              {nanoLoading ? (
+                <div className="p-12 text-center">
+                  <RefreshCw className="w-12 h-12 animate-spin text-red-500 mx-auto mb-4" />
+                  <p className="text-gray-600">Cargando uso...</p>
+                </div>
+              ) : nanoUsage.length === 0 ? (
+                <div className="p-12 text-center">
+                  <p className="text-gray-600">Aún no hay registros de uso.</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Se llena cuando se llama a <code className="font-mono">/api/nano-banana/generate</code>.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Fecha</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Prompt</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Tokens</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">User</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {nanoUsage.map((row, idx) => (
+                        <tr key={`${row.ts}-${idx}`} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                            {new Date(row.ts).toLocaleString('es-ES')}
+                          </td>
+                          <td className="px-4 py-3 text-gray-800 max-w-xl">
+                            <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                              {row.prompt}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                            {row.usage?.totalTokenCount ?? 0}
+                            <span className="text-xs text-gray-400">
+                              {' '}
+                              (p:{row.usage?.promptTokenCount ?? 0}, c:{row.usage?.candidatesTokenCount ?? 0})
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-500 font-mono text-xs whitespace-nowrap">
+                            {row.userId || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'pages' ? (
           /* Pages Grid */
           loading ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
@@ -604,13 +789,26 @@ export function Dashboard() {
                       </button>
                     </div>
 
-                    <button
-                      onClick={() => deletePage(page.code)}
-                      className="w-full flex items-center justify-center space-x-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors text-xs"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Eliminar</span>
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => toggleTest(page.code)}
+                        className={`flex items-center justify-center space-x-1 font-medium py-2 px-3 rounded-lg transition-colors text-xs ${
+                          page.isTest
+                            ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {page.isTest ? '✓ Test' : 'Test'}
+                      </button>
+                      <button
+                        onClick={() => deletePage(page.code)}
+                        disabled={page.isTest}
+                        className="flex items-center justify-center space-x-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-3 rounded-lg transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Eliminar</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -715,6 +913,7 @@ export function Dashboard() {
           )
         )}
       </div>
+      <Footer />
     </div>
   );
 }

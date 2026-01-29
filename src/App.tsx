@@ -8,8 +8,10 @@ import { StoresDashboard } from './components/StoresDashboard';
 import { StorePage } from './components/StorePage';
 import { TermsAndConditions } from './components/TermsAndConditions';
 import { AntiBullying } from './components/AntiBullying';
+import { FeedPage } from './components/FeedPage';
+import { Footer } from './components/Footer';
 
-type View = 'landing' | 'create' | 'success' | 'display' | 'dashboard' | 'stores-dashboard' | 'store' | 'terms' | 'antibullying';
+type View = 'landing' | 'create' | 'success' | 'display' | 'dashboard' | 'stores-dashboard' | 'store' | 'terms' | 'antibullying' | 'feed';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('landing');
@@ -35,6 +37,8 @@ function App() {
       setCurrentView('terms');
     } else if (path === '/antibullying') {
       setCurrentView('antibullying');
+    } else if (path === '/feed') {
+      setCurrentView('feed');
     }
   }, []);
 
@@ -89,11 +93,23 @@ function App() {
   }
 
   if (currentView === 'terms') {
-    return <TermsAndConditions />;
+    return (
+      <>
+        <TermsAndConditions />
+      </>
+    );
   }
 
   if (currentView === 'antibullying') {
-    return <AntiBullying />;
+    return (
+      <>
+        <AntiBullying />
+      </>
+    );
+  }
+
+  if (currentView === 'feed') {
+    return <FeedPage />;
   }
 
   return <LandingPage onSearchCard={handleSearchCard} />;

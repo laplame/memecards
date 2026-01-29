@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle, Lock, Search, Download, Camera } from 'lucide-react';
 import { CardSendingAnimation } from './CardSendingAnimation';
+import { Footer } from './Footer';
 
 interface CreateCardFormProps {
   onBack: () => void;
@@ -1094,6 +1095,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
     </div>
     </>

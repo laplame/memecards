@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Heart, Play, Pause, Volume2, Loader2, Lock, X } from 'lucide-react';
+import { Footer } from './Footer';
 
 interface Card {
   code: string;
@@ -291,6 +292,7 @@ export function CardDisplay({ code }: CardDisplayProps) {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
     </div>
   );

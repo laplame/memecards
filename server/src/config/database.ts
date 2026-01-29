@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
-export const connectDatabase = async (): Promise<void> => {
+export const connectDatabase = async (): Promise<boolean> => {
   try {
     const mongoUri = process.env.MONGODB_ATLAS || process.env.MONGODB_URI;
 
     if (!mongoUri) {
-      throw new Error('MONGODB_ATLAS o MONGODB_URI no está definida en las variables de entorno');
+      console.warn('⚠️  MONGODB_ATLAS/MONGODB_URI no está definida. Se continuará sin MongoDB.');
+      return false;
     }
 
     const options = {
@@ -35,8 +36,11 @@ export const connectDatabase = async (): Promise<void> => {
       console.log('MongoDB conexión cerrada por terminación de la aplicación');
       process.exit(0);
     });
+
+    return true;
   } catch (error) {
     console.error('❌ Error al conectar a MongoDB:', error);
-    throw error;
+    console.warn('⚠️  Continuando sin MongoDB (features de feed/votos/comentarios pueden no funcionar).');
+    return false;
   }
 };
