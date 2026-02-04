@@ -15,7 +15,8 @@ import {
   Navigation,
   Plus,
   FileText,
-  X
+  X,
+  Printer
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { PinLock } from './PinLock';
@@ -242,10 +243,77 @@ export function Dashboard() {
     link.click();
   };
 
+  /** Parsea "De X para Y" del título de la tarjeta */
+  const parseDePara = (title: string): { de: string; para: string } => {
+    const match = title.match(/^De\s+(.+?)\s+para\s+(.+)$/i);
+    if (match) return { de: match[1].trim(), para: match[2].trim() };
+    return { de: '', para: '' };
+  };
+
+  /** Abre ventana de impresión con etiqueta 57x40 mm (De, Para, QR) */
+  const printQR = (page: AudioPage) => {
+    const qrDataUrl = qrCodes[page.code];
+    if (!qrDataUrl) return;
+    const { de, para } = parseDePara(page.title);
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Imprimir QR - ${page.code}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @media screen {
+      body { padding: 10px; background: #eee; }
+      .card { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    }
+    @media print {
+      body { margin: 0; padding: 0; background: white; }
+      .card { box-shadow: none; }
+    }
+    .card {
+      width: 57mm;
+      height: 40mm;
+      padding: 2mm;
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
+      border: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card .de-para { display: flex; flex-direction: column; gap: 1mm; }
+    .card .de-para span { line-height: 1.2; }
+    .card .qr-wrap { display: flex; justify-content: center; align-items: center; flex: 1; min-height: 0; }
+    .card .qr-wrap img { max-width: 22mm; max-height: 22mm; width: auto; height: auto; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="de-para">
+      <span>De: ${de || '________'}</span>
+      <span>Para: ${para || '_______'}</span>
+    </div>
+    <div class="qr-wrap">
+      <img src="${qrDataUrl}" alt="QR" />
+    </div>
+  </div>
+  <script>window.onload = function() { window.print(); }</script>
+</body>
+</html>`;
+    const w = window.open('', '_blank');
+    if (!w) {
+      alert('Permite ventanas emergentes para imprimir.');
+      return;
+    }
+    w.document.write(html);
+    w.document.close();
+  };
+
   const deletePage = async (code: string) => {
     const page = pages.find((p) => p.code === code);
     if (page?.isTest) {
-      alert('No se puede eliminar una tarjeta marcada como test. Primero desmárcala como test.');
+      alert('No se puede eliminar una tarjeta marcada como Preservar. Primero desmárcala.');
       return;
     }
 
@@ -286,11 +354,11 @@ export function Dashboard() {
           prev.map((p) => (p.code === code ? { ...p, isTest: newTestStatus } : p))
         );
       } else {
-        alert('Error al actualizar el estado de test');
+        alert('Error al actualizar el estado Preservar');
       }
     } catch (error) {
-      console.error('Error toggling test:', error);
-      alert('Error al actualizar el estado de test');
+      console.error('Error toggling preservar:', error);
+      alert('Error al actualizar el estado Preservar');
     }
   };
 
@@ -762,10 +830,10 @@ export function Dashboard() {
                       <span>Abrir Página</span>
                     </a>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         onClick={() => copyToClipboard(page.pageUrl, page.code)}
-                        className="flex items-center justify-center space-x-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 rounded-lg transition-colors text-xs"
+                        className="flex items-center justify-center space-x-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-2 rounded-lg transition-colors text-xs"
                       >
                         {copiedCode === page.code ? (
                           <>
@@ -779,13 +847,19 @@ export function Dashboard() {
                           </>
                         )}
                       </button>
-
                       <button
                         onClick={() => downloadQR(page.code)}
-                        className="flex items-center justify-center space-x-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-2 px-3 rounded-lg transition-colors text-xs"
+                        className="flex items-center justify-center space-x-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-2 px-2 rounded-lg transition-colors text-xs"
                       >
                         <Download className="w-3 h-3" />
                         <span>QR</span>
+                      </button>
+                      <button
+                        onClick={() => printQR(page)}
+                        className="flex items-center justify-center space-x-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-2 rounded-lg transition-colors text-xs"
+                      >
+                        <Printer className="w-3 h-3" />
+                        <span>Imprimir QR</span>
                       </button>
                     </div>
 
@@ -798,7 +872,7 @@ export function Dashboard() {
                             : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                         }`}
                       >
-                        {page.isTest ? '✓ Test' : 'Test'}
+                        {page.isTest ? '✓ Preservar' : 'Preservar'}
                       </button>
                       <button
                         onClick={() => deletePage(page.code)}

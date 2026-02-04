@@ -400,7 +400,8 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
         const blob = await response.blob();
         formData.append('image', blob, 'unsplash-image.jpg');
       }
-      if (enablePin && cardPin) {
+      // PIN deshabilitado temporalmente (bloque de tarjeta - trabajaremos en ello después)
+      if (false && enablePin && cardPin) {
         formData.append('pin', cardPin);
       }
       if (useImageAsWallpaper) {
@@ -1007,8 +1008,8 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
               </div>
             </div>
 
-            {/* Opción de PIN de Privacidad */}
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-5 border-2 border-purple-200">
+            {/* Opción de PIN de Privacidad - DESHABILITADA TEMPORALMENTE (bloque de tarjeta, trabajaremos en ello después) */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-5 border-2 border-purple-200 hidden">
               <div className="flex items-start space-x-3 mb-4">
                 <Lock className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
@@ -1061,7 +1062,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
 
             <button
               type="submit"
-              disabled={isSubmitting || !acceptedTerms || !isAdult || (enablePin && cardPin.length !== 4)}
+              disabled={isSubmitting || !acceptedTerms || !isAdult}
               className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-4 px-8 rounded-full text-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
             >
               {isSubmitting ? (

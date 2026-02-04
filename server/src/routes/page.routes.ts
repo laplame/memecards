@@ -413,10 +413,11 @@ router.post('/:code/play', async (req: Request, res: Response, next: NextFunctio
 
     const playCount = page.playCount || 0;
     const maxPlays = page.maxPlays || 5;
-    const canPlay = playCount < maxPlays;
+    const isPreserved = Boolean(page.isTest);
+    const canPlay = isPreserved || playCount < maxPlays;
 
-    // Si se alcanzó el límite, eliminar la página automáticamente
-    if (playCount >= maxPlays) {
+    // Si se alcanzó el límite y no está preservada, eliminar la página automáticamente
+    if (!isPreserved && playCount >= maxPlays) {
       console.log(`🗑️  Eliminando página ${code} - Límite de reproducciones alcanzado`);
       await deletePageByCode(code);
       

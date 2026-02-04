@@ -92,12 +92,13 @@ router.get('/:code', async (req: Request, res: Response, next: NextFunction) => 
       return res.status(404).send(deletedHtml);
     }
 
-    // Verificar si la página está expirada o destruida
+    // Verificar si la página está expirada o destruida (las preservadas no se destruyen)
+    const isPreserved = Boolean(page.isTest);
     const expirationDate = page.expirationDate ? new Date(page.expirationDate) : null;
-    const isExpired = expirationDate && new Date() > expirationDate;
+    const isExpired = !isPreserved && expirationDate && new Date() > expirationDate;
     const playCount = page.playCount || 0;
     const maxPlays = page.maxPlays || 5;
-    const isDestroyed = playCount >= maxPlays;
+    const isDestroyed = !isPreserved && playCount >= maxPlays;
 
     if (isExpired || isDestroyed) {
       // Mostrar página de destrucción
@@ -181,12 +182,13 @@ router.get('/:code/animation', async (req: Request, res: Response, next: NextFun
       throw new AppError('Página no encontrada', 404);
     }
 
-    // Verificar si la página está expirada o destruida
+    // Verificar si la página está expirada o destruida (las preservadas no se destruyen)
+    const isPreserved = Boolean(page.isTest);
     const expirationDate = page.expirationDate ? new Date(page.expirationDate) : null;
-    const isExpired = expirationDate && new Date() > expirationDate;
+    const isExpired = !isPreserved && expirationDate && new Date() > expirationDate;
     const playCount = page.playCount || 0;
     const maxPlays = page.maxPlays || 5;
-    const isDestroyed = playCount >= maxPlays;
+    const isDestroyed = !isPreserved && playCount >= maxPlays;
 
     if (isExpired || isDestroyed) {
       throw new AppError('Esta tarjeta ha sido eliminada', 404);

@@ -365,6 +365,11 @@ export async function incrementPlayCount(code: string): Promise<AudioPage | null
   }
 
   const page = pages[pageIndex];
+
+  // Tarjetas preservadas: no incrementar contador (no se destruyen)
+  if (page.isTest) {
+    return page;
+  }
   
   // Reiniciar contador a cero si es después de las 12:00 AM del 14 de febrero de 2026
   const resetDate = new Date('2026-02-14T00:00:00');

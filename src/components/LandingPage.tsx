@@ -62,6 +62,11 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
         demo_btn: 'Ver Demo - Probar Funcionalidad',
         demo_desc: 'Prueba la funcionalidad completa sin crear una tarjeta',
         perfectFor: 'Perfecto para San Valentín, aniversarios, cumpleaños y momentos especiales',
+        packagesTitle: 'Paquetes de tarjetas',
+        packagesSubtitle: 'Tarjetas por año',
+        packagePerYear: 'por año',
+        packageSelect: 'Elegir',
+        bestValue: 'MEJOR VALOR',
       },
       en: {
         enterCode: 'Please enter a code',
@@ -101,6 +106,11 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
         demo_btn: 'View Demo - Try It',
         demo_desc: 'Try the full experience without creating a card',
         perfectFor: 'Perfect for Valentine’s, anniversaries, birthdays, and special moments',
+        packagesTitle: 'Card packages',
+        packagesSubtitle: 'Cards per year',
+        packagePerYear: 'per year',
+        packageSelect: 'Choose',
+        bestValue: 'BEST VALUE',
       },
     };
     return dict[lang][key] ?? key;
@@ -160,7 +170,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header showNavigation={true} showDashboardLink={false} />
+      <Header showNavigation={true} showDashboardLink={false} theme={selectedFestivity} />
       <div
         className="flex-1 bg-cover bg-center bg-fixed relative"
         style={{
@@ -323,6 +333,72 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
           </div>
         </div>
 
+        {/* Paquetes de tarjetas */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-2 drop-shadow-lg">
+            {t('packagesTitle')}
+          </h2>
+          <p className="text-gray-200 text-center mb-8 drop-shadow-md">
+            {t('packagesSubtitle')}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 10 tarjetas - $5 */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border-2 border-white/30 hover:border-pink-300 hover:shadow-2xl transition-all">
+              <div className="bg-gradient-to-r from-red-500 to-pink-500 p-6 text-white text-center">
+                <div className="text-4xl font-bold">10</div>
+                <div className="text-sm opacity-90 mt-1">{t('packagePerYear')}</div>
+                <div className="text-3xl font-bold mt-4">$5</div>
+                <div className="text-sm opacity-90">USD</div>
+              </div>
+              <div className="p-6 text-center">
+                <button
+                  type="button"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                >
+                  {t('packageSelect')}
+                </button>
+              </div>
+            </div>
+            {/* 20 tarjetas - $10 */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border-2 border-pink-400 relative hover:border-pink-300 hover:shadow-2xl transition-all">
+              <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">
+                {t('bestValue')}
+              </div>
+              <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white text-center">
+                <div className="text-4xl font-bold">20</div>
+                <div className="text-sm opacity-90 mt-1">{t('packagePerYear')}</div>
+                <div className="text-3xl font-bold mt-4">$10</div>
+                <div className="text-sm opacity-90">USD</div>
+              </div>
+              <div className="p-6 text-center">
+                <button
+                  type="button"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                >
+                  {t('packageSelect')}
+                </button>
+              </div>
+            </div>
+            {/* 30 tarjetas - $15 */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border-2 border-white/30 hover:border-pink-300 hover:shadow-2xl transition-all">
+              <div className="bg-gradient-to-r from-rose-500 to-red-500 p-6 text-white text-center">
+                <div className="text-4xl font-bold">30</div>
+                <div className="text-sm opacity-90 mt-1">{t('packagePerYear')}</div>
+                <div className="text-3xl font-bold mt-4">$15</div>
+                <div className="text-sm opacity-90">USD</div>
+              </div>
+              <div className="p-6 text-center">
+                <button
+                  type="button"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                >
+                  {t('packageSelect')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden mb-16">
           <div className={`p-8 text-white ${
             selectedFestivity === 'valentine' ? 'bg-gradient-to-r from-red-500 to-pink-500' :
@@ -455,7 +531,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
         </div>
       </div>
 
-      <Footer />
+      <Footer theme={selectedFestivity} />
     </div>
   );
 }

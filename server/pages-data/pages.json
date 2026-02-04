@@ -44,72 +44,89 @@
   {
     "id": "5dfc277c-d744-47e7-b929-e3fb975e6463",
     "code": "YVLUVKWC",
-    "audioUrl": "http://localhost:3000/api/audio/stream/dummy-audio.mp3",
-    "audioFilename": "dummy-audio.mp3",
-    "title": "Tarjeta 4",
-    "description": "Página de prueba 4 - Lista para personalizar",
+    "audioUrl": "http://localhost:3000/api/audio/stream/2068e725-20c0-42b7-9e3d-6e94145c1cad.mp3",
+    "audioFilename": "processed/2068e725-20c0-42b7-9e3d-6e94145c1cad.mp3",
+    "title": "De Mons para El wero",
+    "description": "ME CAES MAL, POR NO VENIR DIARIO COMO ANTES. ¿QUIEN TE CREES?",
     "createdAt": "2026-01-24T22:53:31.278Z",
     "pageUrl": "http://localhost:3000/page/YVLUVKWC",
-    "isPersonalized": false,
-    "playCount": 0,
+    "isPersonalized": true,
+    "playCount": 2,
     "maxPlays": 5,
-    "expirationDate": "2026-02-14T06:00:00.000Z"
-  },
-  {
-    "id": "44dcb885-07d6-4320-9e31-76c1b0efa677",
-    "code": "4R8NWRB2",
-    "audioUrl": "http://localhost:3000/api/audio/stream/dummy-audio.mp3",
-    "audioFilename": "dummy-audio.mp3",
-    "title": "Tarjeta 5",
-    "description": "Página de prueba 5 - Lista para personalizar",
-    "createdAt": "2026-01-24T22:53:31.282Z",
-    "pageUrl": "http://localhost:3000/page/4R8NWRB2",
-    "isPersonalized": false,
-    "playCount": 0,
-    "maxPlays": 5,
-    "expirationDate": "2026-02-14T06:00:00.000Z"
+    "expirationDate": "2026-02-14T06:00:00.000Z",
+    "senderName": "Mons",
+    "recipientName": "El wero",
+    "writtenMessage": "ME CAES MAL, POR NO VENIR DIARIO COMO ANTES. ¿QUIEN TE CREES?",
+    "imageUrl": "http://localhost:3000/api/images/ecf9d6aa-4e23-41e3-bdc9-b4d44bb181f9.jpg",
+    "imageFilename": "ecf9d6aa-4e23-41e3-bdc9-b4d44bb181f9.jpg",
+    "useImageAsWallpaper": true,
+    "personalizedAt": "2026-02-04T02:53:28.151Z"
   },
   {
     "id": "895d8c16-9b6a-4fa0-bf95-f79930fb8cad",
     "code": "A4M5NAJX",
-    "audioUrl": "http://localhost:3000/api/audio/stream/dummy-audio.mp3",
-    "audioFilename": "dummy-audio.mp3",
-    "title": "Tarjeta 6",
-    "description": "Página de prueba 6 - Lista para personalizar",
+    "audioUrl": "http://localhost:3000/api/audio/stream/94110100-415a-46b2-8a61-09adb270788c.mp3",
+    "audioFilename": "processed/94110100-415a-46b2-8a61-09adb270788c.mp3",
+    "title": "De Chinita para Jose",
+    "description": "Estamos en todas",
     "createdAt": "2026-01-24T22:53:31.286Z",
     "pageUrl": "http://localhost:3000/page/A4M5NAJX",
-    "isPersonalized": false,
-    "playCount": 0,
+    "isPersonalized": true,
+    "playCount": 5,
     "maxPlays": 5,
-    "expirationDate": "2026-02-14T06:00:00.000Z"
+    "expirationDate": "2026-02-14T06:00:00.000Z",
+    "senderName": "Chinita",
+    "recipientName": "Jose",
+    "writtenMessage": "Estamos en todas",
+    "imageUrl": "http://localhost:3000/api/images/c4df9880-02ef-4d4b-9dca-9a93d1ec775d.jpg",
+    "imageFilename": "c4df9880-02ef-4d4b-9dca-9a93d1ec775d.jpg",
+    "useImageAsWallpaper": true,
+    "personalizedAt": "2026-02-03T22:09:42.568Z",
+    "isTest": false
   },
   {
     "id": "358f3f5f-22aa-4c37-ad3d-5a2803228cc0",
     "code": "C4763W3K",
-    "audioUrl": "http://localhost:3000/api/audio/stream/dummy-audio.mp3",
-    "audioFilename": "dummy-audio.mp3",
-    "title": "Tarjeta 7",
-    "description": "Página de prueba 7 - Lista para personalizar",
+    "audioUrl": "http://localhost:3000/api/audio/stream/ea0844c5-3c96-4f54-adfa-a8f572067663.mp3",
+    "audioFilename": "processed/ea0844c5-3c96-4f54-adfa-a8f572067663.mp3",
+    "title": "De sha para Tocayo",
+    "description": "puñal",
     "createdAt": "2026-01-24T22:53:31.289Z",
     "pageUrl": "http://localhost:3000/page/C4763W3K",
-    "isPersonalized": false,
-    "playCount": 0,
+    "isPersonalized": true,
+    "playCount": 4,
     "maxPlays": 5,
-    "expirationDate": "2026-02-14T06:00:00.000Z"
+    "expirationDate": "2026-02-14T06:00:00.000Z",
+    "senderName": "sha",
+    "recipientName": "Tocayo",
+    "writtenMessage": "puñal",
+    "imageUrl": "http://localhost:3000/api/images/a220bf5a-1e45-4b8f-9e7a-08aebab86381.jpg",
+    "imageFilename": "a220bf5a-1e45-4b8f-9e7a-08aebab86381.jpg",
+    "useImageAsWallpaper": true,
+    "personalizedAt": "2026-02-03T18:51:30.829Z",
+    "isTest": false
   },
   {
     "id": "358c99b0-31be-4031-b860-63868cdcf13e",
     "code": "7SHAHPUZ",
-    "audioUrl": "http://localhost:3000/api/audio/stream/dummy-audio.mp3",
-    "audioFilename": "dummy-audio.mp3",
-    "title": "Tarjeta 8",
-    "description": "Página de prueba 8 - Lista para personalizar",
+    "audioUrl": "http://localhost:3000/api/audio/stream/1f16fb4c-b388-42bc-8c37-e5375f4a916f.mp3",
+    "audioFilename": "processed/1f16fb4c-b388-42bc-8c37-e5375f4a916f.mp3",
+    "title": "De Yael para Kaled",
+    "description": "Holi❤️❤️❤️",
     "createdAt": "2026-01-24T22:53:31.293Z",
     "pageUrl": "http://localhost:3000/page/7SHAHPUZ",
-    "isPersonalized": false,
-    "playCount": 0,
+    "isPersonalized": true,
+    "playCount": 2,
     "maxPlays": 5,
-    "expirationDate": "2026-02-14T06:00:00.000Z"
+    "expirationDate": "2026-02-14T06:00:00.000Z",
+    "senderName": "Yael",
+    "recipientName": "Kaled",
+    "writtenMessage": "Holi❤️❤️❤️",
+    "imageUrl": "http://localhost:3000/api/images/8f044d67-2aec-4de5-8a03-7fa8f7bbe7d5.jpg",
+    "imageFilename": "8f044d67-2aec-4de5-8a03-7fa8f7bbe7d5.jpg",
+    "useImageAsWallpaper": true,
+    "personalizedAt": "2026-01-29T20:50:31.891Z",
+    "isTest": false
   },
   {
     "id": "f0a7734b-2ff4-4ce9-957c-2e380d24b34d",
@@ -121,7 +138,7 @@
     "createdAt": "2026-01-24T22:53:31.296Z",
     "pageUrl": "http://localhost:3000/page/CXYBJXVM",
     "isPersonalized": true,
-    "playCount": 0,
+    "playCount": 1,
     "maxPlays": 5,
     "expirationDate": "2026-02-14T06:00:00.000Z",
     "senderName": "Army",
@@ -163,7 +180,7 @@
     "imageUrl": "http://localhost:3000/api/images/7e132ad7-dbec-4298-902e-e4b3f1e2bcdc.jpg",
     "imageFilename": "7e132ad7-dbec-4298-902e-e4b3f1e2bcdc.jpg",
     "personalizedAt": "2026-01-28T18:48:35.234Z",
-    "isTest": true
+    "isTest": false
   },
   {
     "id": "2a02042e-6bf5-40ab-9f1b-bd4557e30799",
@@ -184,7 +201,7 @@
     "imageUrl": "http://localhost:3000/api/images/21665f79-9910-4cf2-9d2d-2dd7d9d438b7.jpg",
     "imageFilename": "21665f79-9910-4cf2-9d2d-2dd7d9d438b7.jpg",
     "personalizedAt": "2026-01-28T16:55:08.318Z",
-    "isTest": true
+    "isTest": false
   },
   {
     "id": "4d79e3f4-7b98-4d98-9873-94abbd49006a",
@@ -206,7 +223,7 @@
     "imageFilename": "409deb61-a0d3-4b9a-b00a-c0bb64f89afb.jpg",
     "useImageAsWallpaper": true,
     "personalizedAt": "2026-01-28T04:27:31.395Z",
-    "isTest": true
+    "isTest": false
   },
   {
     "id": "bec98ab0-d475-4cba-9cab-d5d751cd35d0",
@@ -218,7 +235,7 @@
     "createdAt": "2026-01-26T20:16:09.714Z",
     "pageUrl": "http://localhost:3000/page/AD966N2R",
     "isPersonalized": true,
-    "playCount": 1,
+    "playCount": 2,
     "maxPlays": 5,
     "expirationDate": "2026-02-14T06:00:00.000Z",
     "senderName": "Rulas",
@@ -227,7 +244,7 @@
     "imageUrl": "http://localhost:3000/api/images/a8dc36bd-d3bc-45ae-a1ff-420b5b9f2e08.jpg",
     "imageFilename": "a8dc36bd-d3bc-45ae-a1ff-420b5b9f2e08.jpg",
     "personalizedAt": "2026-01-28T16:30:20.194Z",
-    "isTest": true
+    "isTest": false
   },
   {
     "id": "27334424-08fe-4940-94ef-8eea888b4e53",
@@ -249,7 +266,7 @@
     "imageFilename": "ed6ca8d8-d359-4f66-aa91-8113a43419d0.jpg",
     "useImageAsWallpaper": true,
     "personalizedAt": "2026-01-28T04:11:48.172Z",
-    "isTest": true
+    "isTest": false
   },
   {
     "id": "ebb3cd0b-9dc1-425a-b592-b4d013830614",
@@ -271,6 +288,6 @@
     "imageFilename": "5617c98d-e6ea-4c25-9968-4b3df5933481.jpg",
     "useImageAsWallpaper": true,
     "personalizedAt": "2026-01-28T04:18:03.647Z",
-    "isTest": true
+    "isTest": false
   }
 ]

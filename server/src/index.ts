@@ -62,8 +62,6 @@ if (process.env.MONGODB_ATLAS) {
   console.log('✅ MONGODB_ATLAS encontrada en variables de entorno');
 } else {
   console.log('⚠️  MONGODB_ATLAS no encontrada');
-  console.log(`   Buscando en: ${rootEnvPath}`);
-  console.log(`   Buscando en: ${serverEnvPath}`);
   console.log(`   __dirname: ${__dirname}`);
 }
 
@@ -73,8 +71,6 @@ if (process.env.nano_banana || process.env.NANO_BANANA) {
   console.log(`✅ nano_banana encontrada (longitud: ${key?.length} caracteres)`);
 } else {
   console.log('⚠️  nano_banana no encontrada en variables de entorno');
-  console.log(`   Buscando en: ${rootEnvPath}`);
-  console.log(`   Buscando en: ${serverEnvPath}`);
 }
 
 const app = express();
@@ -101,6 +97,18 @@ app.use('/', staticPagesRouter); // Páginas estáticas (GET /terminos, GET /ant
 app.get('/health', (req, res) => {
   res.redirect('/api/health');
 });
+
+// React app: servir build del frontend desde dist/ (raíz del monorepo)
+const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+  console.log(`📱 React app servida desde: ${clientDistPath}`);
+} else {
+  console.warn(`⚠️  Carpeta dist/ no encontrada en ${clientDistPath}. Ejecuta "npm run build" en la raíz del proyecto para servir la app en /`);
+}
 
 // Error handler
 app.use(errorHandler);

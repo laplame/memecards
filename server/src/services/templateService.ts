@@ -43,6 +43,7 @@ export async function renderAudioPage(page: AudioPage): Promise<string> {
     template = template.replace(/{{HAS_PIN}}/g, String(page.hasPin || false));
     template = template.replace(/{{PIN}}/g, escapeHtml(page.pin || ''));
     template = template.replace(/{{USE_IMAGE_AS_WALLPAPER}}/g, String(page.useImageAsWallpaper || false));
+    template = template.replace(/{{IS_PRESERVED}}/g, String(Boolean(page.isTest)));
     
     // Agregar campos personalizados para JavaScript
     template = template.replace(/{{JS_TITLE}}/g, escapeHtml(page.title || ''));

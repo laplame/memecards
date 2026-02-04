@@ -24,44 +24,48 @@ function getUserId(req: Request): string {
 
 /**
  * GET /api/feed
- * Obtiene todas las tarjetas personalizadas para el feed (solo las que tienen contenido)
- * Con paginación para scroll infinito
+ * Obtiene tarjetas personalizadas para el feed (desde archivo o MongoDB).
+ * Funciona sin MongoDB: muestra tarjetas desde pages.json con votos/comentarios en 0.
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    ensureMongoOrThrow();
-    const page = parseInt(req.query.page as string) || 1;
+    const pageNum = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
+    const skip = (pageNum - 1) * limit;
 
     const allPages = await getAllPages();
-    
-    // Filtrar solo tarjetas personalizadas con contenido Y que sean de test
+
+    // Filtrar tarjetas personalizadas con contenido (incluir isTest para "Preservar" o cualquiera con contenido)
     const personalizedPages = allPages.filter(
-      (p) => p.isPersonalized && 
-            p.isTest && 
-            (p.writtenMessage || p.imageUrl || p.audioUrl)
+      (p) => p.isPersonalized && (p.writtenMessage || p.imageUrl || p.audioUrl)
     );
 
-    // Ordenar por fecha de personalización (más recientes primero)
+    // Ordenar por fecha (más recientes primero)
     personalizedPages.sort((a, b) => {
       const dateA = new Date(a.personalizedAt || a.createdAt).getTime();
       const dateB = new Date(b.personalizedAt || b.createdAt).getTime();
       return dateB - dateA;
     });
 
-    // Paginación
     const paginatedPages = personalizedPages.slice(skip, skip + limit);
     const hasMore = skip + limit < personalizedPages.length;
 
-    // Obtener conteos de votos y comentarios para cada tarjeta
+    const mongoAvailable = mongoose.connection.readyState === 1;
+
     const pagesWithStats = await Promise.all(
-      paginatedPages.map(async (page) => {
-        const voteCount = await CardVote.countDocuments({ cardCode: page.code });
-        const commentCount = await CardComment.countDocuments({ cardCode: page.code });
-        
+      paginatedPages.map(async (p) => {
+        let voteCount = 0;
+        let commentCount = 0;
+        if (mongoAvailable) {
+          try {
+            voteCount = await CardVote.countDocuments({ cardCode: p.code });
+            commentCount = await CardComment.countDocuments({ cardCode: p.code });
+          } catch {
+            // ignorar si falla
+          }
+        }
         return {
-          ...page,
+          ...p,
           voteCount,
           commentCount,
         };
@@ -73,7 +77,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       data: {
         pages: pagesWithStats,
         pagination: {
-          page,
+          page: pageNum,
           limit,
           total: personalizedPages.length,
           hasMore,
@@ -87,14 +91,18 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * GET /api/feed/:code/votes
- * Obtiene el conteo de votos de una tarjeta y si el usuario actual votó
+ * Obtiene el conteo de votos y si el usuario votó. Sin MongoDB devuelve 0 / false.
  */
 router.get('/:code/votes', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    ensureMongoOrThrow();
     const { code } = req.params;
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({
+        success: true,
+        data: { voteCount: 0, userVoted: false },
+      });
+    }
     const userId = getUserId(req);
-
     const voteCount = await CardVote.countDocuments({ cardCode: code });
     const userVoted = !!(await CardVote.findOne({ cardCode: code, userId }));
 

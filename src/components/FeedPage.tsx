@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Send, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageCircle, Send, Loader2, X } from 'lucide-react';
 import { Footer } from './Footer';
 import { Header } from './Header';
 
@@ -41,9 +41,17 @@ export function FeedPage() {
   const [newComment, setNewComment] = useState<Record<string, string>>({});
   const [submittingComment, setSubmittingComment] = useState<Record<string, boolean>>({});
   const [voting, setVoting] = useState<Record<string, boolean>>({});
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+  const [feedError, setFeedError] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   // Cargar tarjetas iniciales
   useEffect(() => {
@@ -74,24 +82,38 @@ export function FeedPage() {
 
   const loadCards = async (pageNum: number) => {
     try {
+      setFeedError(null);
       setLoading(pageNum === 1);
       setLoadingMore(pageNum > 1);
 
       const response = await fetch(`${backendUrl}/api/feed?page=${pageNum}&limit=10`);
       const data = await response.json();
 
-      if (data.success) {
-        const newCards = data.data.pages;
-        
-        // Cargar estado de votos para cada tarjeta
+      if (!response.ok) {
+        setFeedError(data?.message || 'Error al cargar el feed');
+        if (pageNum === 1) setCards([]);
+        return;
+      }
+
+      if (data.success && data.data?.pages) {
+        const newCards = data.data.pages as FeedCard[];
+        const cardsWithResolvedImages = newCards.map((card) => ({
+          ...card,
+          imageUrl: resolveImageUrl(card.imageUrl) || card.imageUrl,
+        }));
+
         const cardsWithVotes = await Promise.all(
-          newCards.map(async (card: FeedCard) => {
-            const voteResponse = await fetch(`${backendUrl}/api/feed/${card.code}/votes`);
-            const voteData = await voteResponse.json();
-            return {
-              ...card,
-              userVoted: voteData.data?.userVoted || false,
-            };
+          cardsWithResolvedImages.map(async (card: FeedCard) => {
+            try {
+              const voteResponse = await fetch(`${backendUrl}/api/feed/${card.code}/votes`);
+              const voteData = await voteResponse.json();
+              return {
+                ...card,
+                userVoted: voteData.data?.userVoted ?? false,
+              };
+            } catch {
+              return { ...card, userVoted: false };
+            }
           })
         );
 
@@ -102,11 +124,15 @@ export function FeedPage() {
           setCards((prev) => [...prev, ...cardsWithVotes]);
         }
 
-        setHasMore(data.data.pagination.hasMore);
+        setHasMore(data.data.pagination?.hasMore ?? false);
         setPage(pageNum);
+      } else if (pageNum === 1) {
+        setCards([]);
       }
     } catch (error) {
       console.error('Error loading cards:', error);
+      setFeedError('No se pudo cargar el feed. Revisa que el servidor esté en marcha.');
+      if (pageNum === 1) setCards([]);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -251,16 +277,21 @@ export function FeedPage() {
         </div>
       </div>
 
-      {/* Card Image */}
-      {card.imageUrl && (
-        <div className="w-full bg-gray-100">
+      {/* Card Image - click to view large */}
+      {(card.imageUrl || resolveImageUrl(card.imageUrl)) && (
+        <button
+          type="button"
+          onClick={() => setLightboxImageUrl(resolveImageUrl(card.imageUrl) || card.imageUrl || '')}
+          className="w-full bg-gray-100 block text-left focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-inset rounded-b-none"
+          aria-label="Ver imagen en grande"
+        >
           <img
-            src={card.imageUrl}
+            src={resolveImageUrl(card.imageUrl) || card.imageUrl}
             alt="Tarjeta"
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
             loading="lazy"
           />
-        </div>
+        </button>
       )}
 
       {/* Card Content */}
@@ -274,7 +305,7 @@ export function FeedPage() {
 
       {/* Actions */}
       <div className="px-4 py-3 border-t border-gray-100">
-        <div className="flex items-center space-x-4 mb-3">
+        <div className="flex items-center flex-wrap gap-2 mb-2">
           <button
             onClick={() => handleVote(card.code)}
             disabled={voting[card.code]}
@@ -297,6 +328,25 @@ export function FeedPage() {
             <MessageCircle className="w-6 h-6" />
             <span className="font-semibold">{card.commentCount}</span>
           </button>
+        </div>
+
+        {/* Hazme viral, Funado!, Cuadro de honor */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          <button
+            type="button"
+            className="px-3 py-1.5 text-xs font-semibold rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600 transition-all shadow-sm"
+          >
+            Hazme viral
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1.5 text-xs font-semibold rounded-full bg-gray-700 text-white hover:bg-gray-800 transition-colors shadow-sm"
+          >
+            Funado!
+          </button>
+          <span className="px-3 py-1.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+            Cuadro de honor
+          </span>
         </div>
 
         {/* Comments Section */}
@@ -371,14 +421,25 @@ export function FeedPage() {
     );
   }
 
-  if (cards.length === 0) {
+  if (cards.length === 0 && !loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <Heart className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No hay tarjetas aún</h2>
-          <p className="text-gray-600">Sé el primero en crear una tarjeta personalizada</p>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex flex-col items-center justify-center p-4">
+        <Header title="MemeCards Feed" />
+        <div className="text-center flex-1 flex flex-col items-center justify-center">
+          {feedError ? (
+            <>
+              <p className="text-red-600 font-medium mb-2">{feedError}</p>
+              <p className="text-gray-600 text-sm">Comprueba que el servidor esté en ejecución en {backendUrl}</p>
+            </>
+          ) : (
+            <>
+              <Heart className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">No hay tarjetas aún</h2>
+              <p className="text-gray-600">Crea una tarjeta personalizada para verla aquí</p>
+            </>
+          )}
         </div>
+        <Footer />
       </div>
     );
   }
@@ -452,6 +513,32 @@ export function FeedPage() {
 
       {/* Observer Target for Infinite Scroll (shared) */}
       <div ref={observerTarget} className="h-4" />
+
+      {/* Lightbox: imagen en grande */}
+      {lightboxImageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxImageUrl(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ver imagen en grande"
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxImageUrl(null)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors z-10"
+            aria-label="Cerrar"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          <img
+            src={lightboxImageUrl}
+            alt="Tarjeta en grande"
+            className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       <Footer />
     </div>
