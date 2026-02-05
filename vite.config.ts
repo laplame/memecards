@@ -7,4 +7,10 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    allowedHosts: [
+      'efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host',
+      '.clouding.host', // cualquier subdominio de Clouding
+    ],
+  },
 });
