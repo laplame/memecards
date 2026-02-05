@@ -1,24 +1,40 @@
 /**
- * PM2 ecosystem file - MemeCards server
+ * PM2: frontend (5173) + backend (3000, API only).
  * Uso: pm2 start ecosystem.config.cjs
- *      pm2 start ecosystem.config.cjs --only memecards-server
+ * Base URL: http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host
  */
+
+const path = require('path');
+const rootDir = path.join(__dirname);
 
 module.exports = {
   apps: [
     {
-      name: 'memecards-server',
+      name: 'memecards-backend',
       script: 'server/dist/index.js',
-      cwd: __dirname,
+      cwd: rootDir,
       instances: 1,
       exec_mode: 'fork',
       watch: false,
       max_memory_restart: '500M',
       env: {
         NODE_ENV: 'production',
+        PORT: 3000,
+        API_ONLY: 'true',
       },
-      env_development: {
-        NODE_ENV: 'development',
+      merge_logs: true,
+      time: true,
+    },
+    {
+      name: 'memecards-frontend',
+      script: 'npm',
+      args: ['run', 'preview:prod'],
+      cwd: rootDir,
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      env: {
+        NODE_ENV: 'production',
       },
       merge_logs: true,
       time: true,

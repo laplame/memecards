@@ -10,11 +10,12 @@
     "build:all": "npm run build && npm run build:server",
     "start:server": "node server/dist/index.js",
     "pm2:start": "pm2 start ecosystem.config.cjs",
-    "pm2:stop": "pm2 stop memecards-server",
-    "pm2:restart": "pm2 restart memecards-server",
-    "pm2:logs": "pm2 logs memecards-server",
+    "pm2:stop": "pm2 stop memecards-backend memecards-frontend",
+    "pm2:restart": "pm2 restart memecards-backend memecards-frontend",
+    "pm2:logs": "pm2 logs memecards-backend memecards-frontend",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:prod": "vite preview --port 5173 --host",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {

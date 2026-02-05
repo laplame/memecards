@@ -1,32 +1,28 @@
 #!/usr/bin/env bash
 #
-# Levanta frontend (Vite dev) y backend (Express) con puertos configurables.
-# Libera los puertos antes de arrancar (mata procesos que los usen).
-# En producción: build + PM2 para el backend.
+# MemeCards: frontend (5173) + backend (3000).
+# Libera los puertos, hace build y arranca ambos con PM2.
+# Base URL: http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host
 #
 # Uso:
-#   ./scripts/start-servers.sh           # producción: liberar puerto, build, PM2
-#   ./scripts/start-servers.sh --dev     # desarrollo: liberar puertos, backend + frontend dev
-#   BACKEND_PORT=4000 ./scripts/start-servers.sh
+#   ./scripts/start-servers.sh           # producción: liberar puertos, build, PM2
+#   ./scripts/start-servers.sh --dev     # desarrollo: backend + Vite dev (sin PM2)
+#   BACKEND_PORT=4000 FRONTEND_PORT=5180 ./scripts/start-servers.sh
 #
 
 set -e
 
-# Directorio raíz del proyecto (donde está package.json)
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-# Puertos (modificables por variables de entorno)
 export BACKEND_PORT="${BACKEND_PORT:-3000}"
-export FRONTEND_DEV_PORT="${FRONTEND_DEV_PORT:-5173}"
-
-# Host público (para BASE_URL y nginx)
+export FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 export PUBLIC_HOST="${PUBLIC_HOST:-efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host}"
 export BASE_URL="${BASE_URL:-http://${PUBLIC_HOST}}"
 
 MODE="${1:-prod}"
 
-# Mata cualquier proceso que esté usando el puerto (macOS y Linux)
+# Libera el puerto (mata procesos que lo usen)
 kill_port() {
   local port="$1"
   if [ -z "$port" ]; then return; fi
@@ -39,34 +35,32 @@ kill_port() {
   fi
 }
 
-# Detiene y elimina la app en PM2 si existe (para arranque limpio)
-pm2_stop_and_remove() {
+# Detiene y elimina apps MemeCards en PM2
+pm2_clean() {
   if command -v pm2 &>/dev/null; then
-    pm2 stop memecards-server 2>/dev/null || true
-    pm2 delete memecards-server 2>/dev/null || true
+    for name in memecards-backend memecards-frontend memecards-server; do
+      pm2 stop "$name" 2>/dev/null || true
+      pm2 delete "$name" 2>/dev/null || true
+    done
   fi
 }
 
-echo "=== MemeCards - Puertos ==="
-echo "  BACKEND_PORT: $BACKEND_PORT"
-echo "  FRONTEND_DEV_PORT: $FRONTEND_DEV_PORT"
-echo "  PUBLIC_HOST: $PUBLIC_HOST"
-echo "  BASE_URL: $BASE_URL"
-echo "  Modo: $MODE"
+echo "=== MemeCards ==="
+echo "  Backend:  port $BACKEND_PORT (API only)"
+echo "  Frontend: port $FRONTEND_PORT (SPA)"
+echo "  Base URL: $BASE_URL"
+echo "  Modo:     $MODE"
 echo ""
 
-# Liberar puertos involucrados antes de arrancar
 echo "Comprobando puertos..."
 kill_port "$BACKEND_PORT"
-[ "$MODE" = "--dev" ] && kill_port "$FRONTEND_DEV_PORT"
+kill_port "$FRONTEND_PORT"
 echo ""
 
 if [ "$MODE" = "--dev" ]; then
-  echo "Modo desarrollo: backend (puerto $BACKEND_PORT) + frontend Vite (puerto $FRONTEND_DEV_PORT)"
-  echo "Nginx debe hacer proxy a backend en $BACKEND_PORT (o accede a frontend en http://localhost:$FRONTEND_DEV_PORT)"
+  echo "Modo desarrollo: backend ($BACKEND_PORT) + Vite dev ($FRONTEND_PORT)"
   echo ""
 
-  # Al salir (Ctrl+C), matar el backend
   cleanup() {
     if [ -f "$ROOT_DIR/.backend.pid" ]; then
       kill "$(cat "$ROOT_DIR/.backend.pid")" 2>/dev/null || true
@@ -75,36 +69,36 @@ if [ "$MODE" = "--dev" ]; then
   }
   trap cleanup EXIT
 
-  # Backend en segundo plano con el puerto configurado
-  (cd server && PORT=$BACKEND_PORT npm run dev &
+  (cd server && PORT=$BACKEND_PORT API_ONLY=true npm run dev &
    echo $! > "$ROOT_DIR/.backend.pid")
 
-  # Frontend dev (en primer plano para ver logs; Ctrl+C mata frontend y backend)
-  PORT=$FRONTEND_DEV_PORT npm run dev -- --port "$FRONTEND_DEV_PORT" --host
+  npm run dev -- --port "$FRONTEND_PORT" --host
 else
-  echo "Modo producción: build + PM2 (backend en puerto $BACKEND_PORT)"
+  echo "Modo producción: build + PM2 (backend $BACKEND_PORT, frontend $FRONTEND_PORT)"
   echo ""
 
-  # Detener app anterior en PM2 y liberar puerto
-  pm2_stop_and_remove
+  pm2_clean
   kill_port "$BACKEND_PORT"
+  kill_port "$FRONTEND_PORT"
 
-  # Build frontend y backend
-  npm run build:all || { echo "Build falló. Revisa errores arriba."; exit 1; }
+  npm run build:all || { echo "Build falló."; exit 1; }
 
-  # Exportar puerto para el proceso Node
   export PORT=$BACKEND_PORT
+  export API_ONLY=true
 
-  # Iniciar con PM2 (usa ecosystem.config.cjs)
   if command -v pm2 &>/dev/null; then
     pm2 start ecosystem.config.cjs --update-env
     echo ""
-    echo "Backend en PM2 (puerto $BACKEND_PORT). Comandos:"
-    echo "  pm2 status | pm2 logs memecards-server | pm2 restart memecards-server"
+    echo "Apps en PM2:"
+    echo "  memecards-backend  -> http://localhost:$BACKEND_PORT (API)"
+    echo "  memecards-frontend -> http://localhost:$FRONTEND_PORT (SPA)"
     echo ""
-    echo "Servidor disponible en http://localhost:$BACKEND_PORT"
+    echo "Comandos: pm2 status | pm2 logs | pm2 restart memecards-backend memecards-frontend"
+    echo "Base URL: $BASE_URL"
   else
-    echo "PM2 no instalado. Iniciando backend con node..."
-    node server/dist/index.js
+    echo "PM2 no instalado. Iniciando manualmente..."
+    (PORT=$BACKEND_PORT API_ONLY=true node server/dist/index.js &)
+    (npm run preview -- --port "$FRONTEND_PORT" --host &)
+    wait
   fi
 fi

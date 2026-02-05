@@ -98,16 +98,21 @@ app.get('/health', (req, res) => {
   res.redirect('/api/health');
 });
 
-// React app: servir build del frontend desde dist/ (raíz del monorepo)
-const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
-if (fs.existsSync(clientDistPath)) {
-  app.use(express.static(clientDistPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDistPath, 'index.html'));
-  });
-  console.log(`📱 React app servida desde: ${clientDistPath}`);
+// React app: servir build del frontend solo si no estamos en modo API-only (frontend en otro puerto)
+const apiOnly = process.env.API_ONLY === 'true' || process.env.API_ONLY === '1';
+if (!apiOnly) {
+  const clientDistPath = path.resolve(__dirname, '..', '..', 'dist');
+  if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(clientDistPath, 'index.html'));
+    });
+    console.log(`📱 React app servida desde: ${clientDistPath}`);
+  } else {
+    console.warn(`⚠️  Carpeta dist/ no encontrada en ${clientDistPath}. Ejecuta "npm run build" en la raíz del proyecto para servir la app en /`);
+  }
 } else {
-  console.warn(`⚠️  Carpeta dist/ no encontrada en ${clientDistPath}. Ejecuta "npm run build" en la raíz del proyecto para servir la app en /`);
+  console.log('📡 Modo API-only: el frontend se sirve en otro puerto (ej. 5173).');
 }
 
 // Error handler

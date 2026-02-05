@@ -429,7 +429,9 @@ export function FeedPage() {
           {feedError ? (
             <>
               <p className="text-red-600 font-medium mb-2">{feedError}</p>
-              <p className="text-gray-600 text-sm">Comprueba que el servidor esté en ejecución en {backendUrl}</p>
+              <p className="text-gray-600 text-sm">
+                Comprueba que el servidor esté en ejecución en {backendUrl || (typeof window !== 'undefined' ? window.location.origin : 'este host')}.
+              </p>
             </>
           ) : (
             <>
