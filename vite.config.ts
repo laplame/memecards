@@ -12,5 +12,10 @@ export default defineConfig({
       'efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host',
       '.clouding.host', // cualquier subdominio de Clouding
     ],
+    // En desarrollo, /api y /page van al backend (puerto 3000)
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/page': { target: 'http://localhost:3000', changeOrigin: true },
+    },
   },
 });

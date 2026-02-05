@@ -33,7 +33,7 @@ export function CardDisplay({ code }: CardDisplayProps) {
 
   const loadCard = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
       const response = await fetch(`${backendUrl}/api/pages/${code.toUpperCase()}`);
 
       if (!response.ok) {
@@ -89,7 +89,7 @@ export function CardDisplay({ code }: CardDisplayProps) {
         return true;
       }
 
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
       const response = await fetch(`${backendUrl}/api/pages/${code.toUpperCase()}/verify-pin`, {
         method: 'POST',
         headers: {

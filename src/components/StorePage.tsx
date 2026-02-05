@@ -27,7 +27,7 @@ export function StorePage({ storeId }: StorePageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
 
   useEffect(() => {
     loadStore();

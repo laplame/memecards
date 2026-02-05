@@ -19,7 +19,7 @@ export function StoreLocations() {
   const [stores, setStores] = useState<StoreLocation[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
 
   useEffect(() => {
     loadStores();

@@ -304,7 +304,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
 
     setSearchingUnsplash(true);
     try {
-      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL ?? '';
       const response = await fetch(`${backendUrlEnv}/api/unsplash/search?query=${encodeURIComponent(unsplashQuery)}&perPage=20`);
       
       if (!response.ok) {
@@ -323,7 +323,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
 
   const handleSelectUnsplashImage = async (imageUrl: string) => {
     try {
-      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL ?? '';
       const response = await fetch(`${backendUrlEnv}/api/unsplash/download`, {
         method: 'POST',
         headers: {
@@ -384,7 +384,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
     setIsSubmitting(true);
 
     try {
-      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL ?? '';
       const formData = new FormData();
       formData.append('audio', audioBlob, `audio-${Date.now()}.webm`);
       formData.append('title', `Tarjeta de ${senderName} para ${recipientName}`);

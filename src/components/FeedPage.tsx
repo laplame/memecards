@@ -45,7 +45,7 @@ export function FeedPage() {
   const [feedError, setFeedError] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
 
   const resolveImageUrl = (url?: string) => {
     if (!url) return undefined;

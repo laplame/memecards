@@ -42,7 +42,7 @@ export function StoresDashboard() {
     isActive: true,
   });
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
 
   useEffect(() => {
     if (isUnlocked) {

@@ -140,7 +140,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
     setSearchError(null);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
       const response = await fetch(`${backendUrl}/api/pages/${code}`);
 
       if (!response.ok) {
@@ -491,7 +491,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
                 </div>
                 <button
                   onClick={() => {
-                    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+                    const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
                     // Inicializar la demo si no existe
                     fetch(`${backendUrl}/api/pages/demo/init`)
                       .then(() => {
