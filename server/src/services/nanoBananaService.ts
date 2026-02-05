@@ -75,11 +75,23 @@ export async function generateImageWithNanoBanana(
       throw new Error(`Error en Gemini API: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    interface GeminiCandidate {
+      content?: { parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }> };
+    }
+    interface GeminiUsage {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    }
+    interface GeminiResponse {
+      candidates?: GeminiCandidate[];
+      usageMetadata?: GeminiUsage;
+    }
+    const data = (await response.json()) as GeminiResponse;
 
     // Extraer la imagen de la respuesta
     if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      const parts = data.candidates[0].content.parts;
+      const parts = data.candidates[0].content.parts ?? [];
       for (const part of parts) {
         if (part.inlineData && part.inlineData.data) {
           // Convertir base64 a buffer y devolver como data URL

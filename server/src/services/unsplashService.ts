@@ -67,7 +67,7 @@ export async function searchUnsplashImages(
       throw new Error(`Error en Unsplash API: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as UnsplashSearchResponse;
     return {
       results: data.results || [],
       total: data.total || 0,
@@ -100,7 +100,7 @@ export async function getUnsplashImage(imageId: string): Promise<UnsplashImage> 
       throw new Error(`Error en Unsplash API: ${response.status} - ${errorText}`);
     }
 
-    return await response.json();
+    return (await response.json()) as UnsplashImage;
   } catch (error) {
     throw new Error(`Error al obtener imagen de Unsplash: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

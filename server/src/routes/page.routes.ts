@@ -107,7 +107,7 @@ router.post(
         
         // Eliminar la imagen original no optimizada
         try {
-          await fs.promises.unlink(imageFile.path);
+          await fs.unlink(imageFile.path);
         } catch (error) {
           console.error('Error al eliminar imagen original:', error);
         }

@@ -37,9 +37,11 @@ export async function getAudioInfo(filePath: string): Promise<AudioInfo> {
         return;
       }
 
+      const bitRate = metadata.format?.bit_rate;
+      const bitrate = typeof bitRate === 'number' ? bitRate : parseInt(String(bitRate || '0'), 10);
       resolve({
         duration: metadata.format?.duration || 0,
-        bitrate: parseInt(metadata.format?.bit_rate || '0', 10),
+        bitrate,
         format: metadata.format?.format_name || 'unknown',
         sampleRate: audioStream.sample_rate || 0,
         channels: audioStream.channels || 0,
@@ -77,10 +79,10 @@ export async function processAudio(
     command = command.audioFilters('volume=0.8');
 
     command
-      .on('start', (commandLine) => {
+      .on('start', (commandLine: string) => {
         console.log('FFmpeg iniciado:', commandLine);
       })
-      .on('progress', (progress) => {
+      .on('progress', (progress: { percent?: number }) => {
         console.log(`Procesando: ${Math.round(progress.percent || 0)}%`);
       })
       .on('end', async () => {
@@ -99,7 +101,7 @@ export async function processAudio(
           reject(error);
         }
       })
-      .on('error', (err) => {
+      .on('error', (err: Error) => {
         reject(new Error(`Error al procesar audio: ${err.message}`));
       })
       .save(outputPath);
@@ -122,7 +124,7 @@ export async function convertAudio(
       .on('end', () => {
         resolve(outputPath);
       })
-      .on('error', (err) => {
+      .on('error', (err: Error) => {
         reject(new Error(`Error al convertir audio: ${err.message}`));
       })
       .save(outputPath);
