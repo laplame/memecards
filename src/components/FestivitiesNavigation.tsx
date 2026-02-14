@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Heart, Cake, Users, GraduationCap, UserCircle, Snowflake, ChevronDown } from 'lucide-react';
+import { Heart, Cake, Users, GraduationCap, UserCircle, Snowflake, ChevronDown, Handshake } from 'lucide-react';
 
 export type FestivityType = 
+  | 'friendship'
+  | 'birthday'
+  | 'mothers-day'
   | 'valentine' 
-  | 'mothers-day' 
-  | 'birthday' 
   | 'fathers-day' 
   | 'teachers-day' 
   | 'grandparents-day' 
@@ -20,11 +21,18 @@ interface Festivity {
 
 const festivities: Festivity[] = [
   {
-    id: 'valentine',
-    name: 'San Valentín',
-    icon: <Heart className="w-5 h-5" />,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    id: 'friendship',
+    name: 'Amistad',
+    icon: <Handshake className="w-5 h-5" />,
+    color: 'text-sky-600',
+    bgColor: 'bg-sky-100',
+  },
+  {
+    id: 'birthday',
+    name: 'Cumpleaños',
+    icon: <Cake className="w-5 h-5" />,
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-100',
   },
   {
     id: 'mothers-day',
@@ -34,11 +42,11 @@ const festivities: Festivity[] = [
     bgColor: 'bg-pink-100',
   },
   {
-    id: 'birthday',
-    name: 'Cumpleaños',
-    icon: <Cake className="w-5 h-5" />,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
+    id: 'valentine',
+    name: 'San Valentín',
+    icon: <Heart className="w-5 h-5" />,
+    color: 'text-red-600',
+    bgColor: 'bg-red-100',
   },
   {
     id: 'fathers-day',
@@ -76,7 +84,7 @@ interface FestivitiesNavigationProps {
 }
 
 export function FestivitiesNavigation({ 
-  selectedFestivity = 'valentine',
+  selectedFestivity = 'friendship',
   onFestivityChange 
 }: FestivitiesNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);

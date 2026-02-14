@@ -87,6 +87,7 @@ export function Dashboard() {
     storeName: '',
     serverId: '',
     quantity: 10,
+    temporality: 1, // Años de validez, por defecto 1 año
   });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
@@ -385,6 +386,7 @@ export function Dashboard() {
           storeName: createFormData.storeName,
           serverId: createFormData.serverId,
           quantity: createFormData.quantity,
+          temporality: createFormData.temporality,
         }),
       });
 
@@ -592,12 +594,34 @@ export function Dashboard() {
                     ))}
                   </div>
                 </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Temporalidad (Años de validez) *
+                  </label>
+                  <div className="grid grid-cols-5 gap-3">
+                    {[1, 2, 3, 5, 10].map((years) => (
+                      <button
+                        key={years}
+                        type="button"
+                        onClick={() => setCreateFormData({ ...createFormData, temporality: years })}
+                        className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                          createFormData.temporality === years
+                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg transform scale-105'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {years} {years === 1 ? 'año' : 'años'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
                   <strong>Resumen:</strong> Se crearán <strong>{createFormData.quantity} tarjetas</strong> para{' '}
                   <strong>{createFormData.storeName || '[Nombre de papelería]'}</strong> con ID{' '}
-                  <strong>{createFormData.serverId || '[ID del servidor]'}</strong>
+                  <strong>{createFormData.serverId || '[ID del servidor]'}</strong> con una validez de{' '}
+                  <strong>{createFormData.temporality} {createFormData.temporality === 1 ? 'año' : 'años'}</strong>
                 </p>
               </div>
               <div className="flex justify-end space-x-3 pt-4">

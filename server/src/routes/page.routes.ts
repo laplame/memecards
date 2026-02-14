@@ -503,7 +503,7 @@ router.patch('/:code/test', async (req: Request, res: Response, next: NextFuncti
  */
 router.post('/bulk-create', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { storeName, serverId, quantity } = req.body;
+    const { storeName, serverId, quantity, temporality } = req.body;
 
     // Validaciones
     if (!storeName || !serverId) {
@@ -519,7 +519,13 @@ router.post('/bulk-create', async (req: Request, res: Response, next: NextFuncti
       throw new AppError('No se pueden crear más de 1000 tarjetas a la vez', 400);
     }
 
-    console.log(`🔄 Creando ${qty} tarjetas para ${storeName} (${serverId})...`);
+    // Validar temporalidad (por defecto 1 año)
+    const tempYears = temporality ? parseInt(temporality, 10) : 1;
+    if (tempYears < 1 || tempYears > 50) {
+      throw new AppError('La temporalidad debe estar entre 1 y 50 años', 400);
+    }
+
+    console.log(`🔄 Creando ${qty} tarjetas para ${storeName} (${serverId}) con validez de ${tempYears} año(s)...`);
 
     const createdPages = [];
     const errors = [];
@@ -531,6 +537,7 @@ router.post('/bulk-create', async (req: Request, res: Response, next: NextFuncti
           description: `Tarjeta ${i} de ${qty} para ${storeName}`,
           storeName,
           serverId,
+          temporality: tempYears,
         });
         createdPages.push(page);
         

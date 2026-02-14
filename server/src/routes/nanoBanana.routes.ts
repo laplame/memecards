@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { Request, Response, NextFunction } from 'express';
-import { generateImageWithNanoBanana, NANO_BANANA_IDEAS } from '../services/nanoBananaService.js';
+import { generateImageWithNanoBanana, remixImageWithNanoBanana, NANO_BANANA_IDEAS } from '../services/nanoBananaService.js';
 import { optimizeImage } from '../services/imageOptimizer.js';
 import { AppError } from '../middleware/errorHandler.js';
 import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'crypto';
+import { uploadImage } from '../middleware/uploadImage.js';
 
 const router = Router();
 const imagesDir = process.env.IMAGES_DIR || './images';
@@ -156,6 +157,106 @@ router.post('/generate', async (req: Request, res: Response, next: NextFunction)
       await fs.unlink(tempPath);
     } catch (error) {
       console.error('Error al eliminar imagen temporal:', error);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        imageUrl,
+        filename: optimizedFilename,
+        usage: result.usage ?? null,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/nano-banana/remix
+ * Hace remix de una imagen con IA usando Nano Banana
+ */
+router.post('/remix', uploadImage.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const file = req.file;
+    const { userText, festivity } = req.body;
+
+    if (!file) {
+      throw new AppError('Se requiere una imagen', 400);
+    }
+
+    if (!userText || typeof userText !== 'string' || userText.trim().length === 0) {
+      throw new AppError('Se requiere "userText" (texto del usuario)', 400);
+    }
+
+    // Leer la imagen como buffer
+    const imageBuffer = await fs.readFile(file.path);
+
+    // Hacer remix con Nano Banana
+    const result = await remixImageWithNanoBanana(
+      imageBuffer,
+      userText.trim(),
+      festivity || undefined
+    );
+
+    if (!result.success || !result.imageUrl) {
+      throw new AppError(result.error || 'Error al hacer remix de imagen', 500);
+    }
+
+    // Convertir data URL a buffer
+    const base64Data = result.imageUrl.split(',')[1];
+    const remixedImageBuffer = Buffer.from(base64Data, 'base64');
+
+    // Guardar imagen remixada temporalmente
+    const tempFilename = `nano-banana-remix-${Date.now()}.png`;
+    const tempPath = path.join(imagesDir, tempFilename);
+
+    // Asegurar que el directorio existe
+    await fs.mkdir(imagesDir, { recursive: true });
+
+    // Guardar imagen temporal
+    await fs.writeFile(tempPath, remixedImageBuffer);
+
+    // Optimizar imagen
+    const optimizedPath = await optimizeImage(tempPath, {
+      maxWidth: 1200,
+      maxHeight: 1200,
+      quality: 85,
+    });
+
+    const optimizedFilename = path.basename(optimizedPath);
+    const imageUrl = `${baseUrl}/api/images/${optimizedFilename}`;
+
+    // Log de uso
+    const userAgent = String(req.headers['user-agent'] || '');
+    const ip =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '';
+    const userId = crypto
+      .createHash('sha256')
+      .update(`${ip}|${userAgent}`)
+      .digest('hex')
+      .slice(0, 16);
+
+    await appendUsageLog({
+      ts: new Date().toISOString(),
+      prompt: `Remix: ${userText}${festivity ? ` (${festivity})` : ''}`,
+      ideaId: null,
+      imageUrl,
+      filename: optimizedFilename,
+      usage: result.usage ?? null,
+      userId,
+      remix: true,
+      originalFilename: file.filename,
+    });
+
+    // Eliminar imágenes temporales
+    try {
+      await fs.unlink(tempPath);
+      await fs.unlink(file.path); // Eliminar imagen original subida
+    } catch (error) {
+      console.error('Error al eliminar imágenes temporales:', error);
     }
 
     res.json({

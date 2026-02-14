@@ -10,12 +10,14 @@ import { TermsAndConditions } from './components/TermsAndConditions';
 import { AntiBullying } from './components/AntiBullying';
 import { FeedPage } from './components/FeedPage';
 import { Footer } from './components/Footer';
+import { type FestivityType } from './components/FestivitiesNavigation';
 
 type View = 'landing' | 'create' | 'success' | 'display' | 'dashboard' | 'stores-dashboard' | 'store' | 'terms' | 'antibullying' | 'feed';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('landing');
   const [cardCode, setCardCode] = useState<string>('');
+  const [selectedFestivity, setSelectedFestivity] = useState<FestivityType | undefined>(undefined);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -89,7 +91,7 @@ function App() {
   }
 
   if (currentView === 'create') {
-    return <CreateCardForm onBack={handleBack} onSuccess={handleSuccess} />;
+    return <CreateCardForm onBack={handleBack} onSuccess={handleSuccess} festivity={selectedFestivity} />;
   }
 
   if (currentView === 'terms') {
@@ -112,7 +114,7 @@ function App() {
     return <FeedPage />;
   }
 
-  return <LandingPage onSearchCard={handleSearchCard} />;
+  return <LandingPage onSearchCard={handleSearchCard} onFestivityChange={setSelectedFestivity} />;
 }
 
 export default App;

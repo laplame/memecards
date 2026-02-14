@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
-import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle, Lock, Search, Download, Camera } from 'lucide-react';
+import { Heart, Mic, Square, Play, Pause, ArrowLeft, Loader2, Volume2, Image, X, Shield, AlertCircle, Lock, Search, Download, Camera, Sparkles } from 'lucide-react';
 import { CardSendingAnimation } from './CardSendingAnimation';
 import { Footer } from './Footer';
+import { type FestivityType } from './FestivitiesNavigation';
 
 interface CreateCardFormProps {
   onBack: () => void;
   onSuccess: (code: string) => void;
+  festivity?: FestivityType;
 }
 
-export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
+export function CreateCardForm({ onBack, onSuccess, festivity }: CreateCardFormProps) {
   const [senderName, setSenderName] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [message, setMessage] = useState('');
@@ -35,6 +37,7 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
   const [useImageAsWallpaper, setUseImageAsWallpaper] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [isRemixing, setIsRemixing] = useState(false);
   const [cardData, setCardData] = useState<{
     code: string;
     imageUrl?: string;
@@ -354,6 +357,67 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
     }
     setAcceptedTerms(true);
     setShowTermsModal(false);
+  };
+
+  const handleRemixWithAI = async () => {
+    if (!selectedImage && !selectedUnsplashImage) {
+      alert('Por favor sube una imagen primero');
+      return;
+    }
+
+    if (!message || message.trim().length === 0) {
+      alert('Por favor escribe un mensaje para el remix');
+      return;
+    }
+
+    setIsRemixing(true);
+
+    try {
+      const backendUrlEnv = import.meta.env.VITE_BACKEND_URL ?? '';
+      const formData = new FormData();
+      
+      // Si hay imagen subida, usarla; si no, descargar la de Unsplash
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      } else if (selectedUnsplashImage) {
+        const response = await fetch(selectedUnsplashImage);
+        const blob = await response.blob();
+        formData.append('image', blob, 'unsplash-image.jpg');
+      }
+
+      formData.append('userText', message.trim());
+      if (festivity) {
+        formData.append('festivity', festivity);
+      }
+
+      const response = await fetch(`${backendUrlEnv}/api/nano-banana/remix`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Error al hacer remix de la imagen');
+      }
+
+      const data = await response.json();
+
+      if (!data.success || !data.data?.imageUrl) {
+        throw new Error('No se recibió una imagen válida del remix');
+      }
+
+      // Actualizar la imagen con el remix
+      setImagePreview(data.data.imageUrl);
+      setSelectedUnsplashImage(data.data.imageUrl);
+      setSelectedImage(null); // Limpiar imagen original ya que ahora tenemos el remix
+
+      alert('¡Remix completado! La imagen ha sido actualizada.');
+    } catch (error: any) {
+      console.error('Error haciendo remix:', error);
+      alert(error.message || 'Error al hacer remix de la imagen. Por favor intenta de nuevo.');
+    } finally {
+      setIsRemixing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -840,6 +904,25 @@ export function CreateCardForm({ onBack, onSuccess }: CreateCardFormProps) {
                         Desde Unsplash
                       </div>
                     )}
+                    {/* Botón de Remix con IA */}
+                    <button
+                      type="button"
+                      onClick={handleRemixWithAI}
+                      disabled={isRemixing || !message.trim()}
+                      className="absolute bottom-2 right-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2 shadow-lg"
+                    >
+                      {isRemixing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Remixeando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          Remix con IA
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
                 

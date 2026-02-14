@@ -27,6 +27,132 @@ export interface NanoBananaImageResponse {
 }
 
 /**
+ * Remix de una imagen con IA usando Nano Banana (Gemini Image Generation)
+ * @param imageBuffer Buffer de la imagen original
+ * @param userText Texto del usuario (ej: "llevanos a paris", "tu yo viendo una aurora boreal")
+ * @param festivity Tipo de festividad (ej: 'mothers-day', 'fathers-day', 'birthday')
+ * @returns URL de la imagen remixada o error
+ */
+export async function remixImageWithNanoBanana(
+  imageBuffer: Buffer,
+  userText: string,
+  festivity?: string
+): Promise<NanoBananaImageResponse> {
+  const GEMINI_API_KEY = getGeminiApiKey();
+  
+  if (!GEMINI_API_KEY) {
+    throw new Error('nano_banana API key no está configurada en las variables de entorno');
+  }
+
+  // Convertir imagen a base64
+  const imageBase64 = imageBuffer.toString('base64');
+  
+  // Determinar el tipo MIME (asumimos JPEG por defecto, pero podríamos detectarlo)
+  const mimeType = 'image/jpeg';
+
+  // Construir el prompt contextual basado en la festividad
+  const festivityContext: Record<string, string> = {
+    'mothers-day': 'Día de la Madre, celebración familiar, amor maternal',
+    'fathers-day': 'Día del Padre, celebración familiar, amor paternal',
+    'birthday': 'Cumpleaños, celebración, fiesta, alegría',
+    'valentine': 'San Valentín, amor romántico, pareja',
+    'friendship': 'Amistad, celebración entre amigos',
+    'teachers-day': 'Día del Maestro, educación, agradecimiento',
+    'grandparents-day': 'Día del Abuelo, familia, sabiduría',
+    'christmas': 'Navidad, celebración navideña, familia',
+  };
+
+  const context = festivity ? festivityContext[festivity] || '' : '';
+  
+  // Construir el prompt final combinando contexto, texto del usuario y la imagen
+  const prompt = context 
+    ? `${context}. ${userText}. Remix esta imagen manteniendo el estilo y composición pero incorporando los elementos mencionados.`
+    : `${userText}. Remix esta imagen manteniendo el estilo y composición pero incorporando los elementos mencionados.`;
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType: mimeType,
+              }
+            },
+            { text: prompt }
+          ]
+        }],
+        generationConfig: {
+          responseModalities: ['IMAGE'],
+          imageConfig: {
+            aspectRatio: '4:3',
+          }
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error en Gemini API: ${response.status} - ${errorText}`);
+    }
+
+    interface GeminiCandidate {
+      content?: { parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }> };
+    }
+    interface GeminiUsage {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    }
+    interface GeminiResponse {
+      candidates?: GeminiCandidate[];
+      usageMetadata?: GeminiUsage;
+    }
+    const data = (await response.json()) as GeminiResponse;
+
+    // Extraer la imagen de la respuesta
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      const parts = data.candidates[0].content.parts ?? [];
+      for (const part of parts) {
+        if (part.inlineData && part.inlineData.data) {
+          const imageData = part.inlineData.data;
+          const mimeType = part.inlineData.mimeType || 'image/png';
+          const imageUrl = `data:${mimeType};base64,${imageData}`;
+
+          const usage = data.usageMetadata
+            ? {
+                promptTokenCount: data.usageMetadata.promptTokenCount,
+                candidatesTokenCount: data.usageMetadata.candidatesTokenCount,
+                totalTokenCount: data.usageMetadata.totalTokenCount,
+              }
+            : undefined;
+          
+          return {
+            success: true,
+            imageUrl,
+            usage,
+          };
+        }
+      }
+    }
+
+    throw new Error('No se encontró imagen en la respuesta de Gemini API');
+  } catch (error) {
+    console.error('Error haciendo remix de imagen con Nano Banana:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido al hacer remix de imagen',
+    };
+  }
+}
+
+/**
  * Genera una imagen usando Nano Banana (Gemini Image Generation)
  * @param prompt Descripción de la imagen a generar
  * @returns URL de la imagen generada o error

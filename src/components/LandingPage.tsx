@@ -8,9 +8,10 @@ import { Header } from './Header';
 
 interface LandingPageProps {
   onSearchCard: (code: string) => void;
+  onFestivityChange?: (festivity: FestivityType) => void;
 }
 
-export function LandingPage({ onSearchCard }: LandingPageProps) {
+export function LandingPage({ onSearchCard, onFestivityChange }: LandingPageProps) {
   const [lang, setLang] = useState<'es' | 'en'>(() => {
     const saved = localStorage.getItem('lang');
     if (saved === 'en' || saved === 'es') return saved;
@@ -19,7 +20,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
   const [searchCode, setSearchCode] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [selectedFestivity, setSelectedFestivity] = useState<FestivityType>('valentine');
+  const [selectedFestivity, setSelectedFestivity] = useState<FestivityType>('friendship');
   const [showTransferBanner, setShowTransferBanner] = useState(true);
 
   const t = (key: string) => {
@@ -43,6 +44,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
         headline: 'Tarjetas con Corazón',
         subhead: 'Crea tarjetas híbridas únicas que combinan el encanto físico con la magia digital',
         quote: "Escanea, personaliza y regala… porque nada dice 'te quiero' como un glitch multiversal de amor.",
+        festHeadline_friendship: 'Celebra la Amistad',
         festHeadline_valentine: 'Sorprende este 14 de Febrero',
         festHeadline_mothers: 'Celebra el Día de la Madre',
         festHeadline_birthday: 'Celebra un Cumpleaños Especial',
@@ -87,6 +89,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
         headline: 'Cards with Heart',
         subhead: 'Create unique hybrid cards that blend physical charm with digital magic',
         quote: "Scan, personalize and gift… because nothing says 'I love you' like a multiverse love glitch.",
+        festHeadline_friendship: 'Celebrate Friendship',
         festHeadline_valentine: "Surprise them on February 14",
         festHeadline_mothers: "Celebrate Mother's Day",
         festHeadline_birthday: 'Celebrate a Special Birthday',
@@ -168,13 +171,25 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
     }
   };
 
+  // Imágenes de fondo por festividad
+  const backgroundImages: Record<FestivityType, string> = {
+    'friendship': 'https://images.unsplash.com/photo-1729021928204-f7bacc68cd60?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'birthday': 'https://plus.unsplash.com/premium_photo-1693266697129-4dacef81771d?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'mothers-day': 'https://images.unsplash.com/photo-1514922130690-95dcdfbe563f?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'valentine': 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'fathers-day': 'https://images.unsplash.com/photo-1624046768705-8603f683231c?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'teachers-day': 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'grandparents-day': 'https://images.unsplash.com/photo-1753164726321-7f7d94a9291e?q=80&w=1031&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'christmas': 'https://images.unsplash.com/photo-1511268011861-691ed210aae8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header showNavigation={true} showDashboardLink={false} theme={selectedFestivity} />
       <div
-        className="flex-1 bg-cover bg-center bg-fixed relative"
+        className="flex-1 bg-cover bg-center bg-fixed relative transition-all duration-500"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)',
+          backgroundImage: `url(${backgroundImages[selectedFestivity]})`,
         }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
@@ -245,7 +260,10 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
         <div className="mb-8">
           <FestivitiesNavigation 
             selectedFestivity={selectedFestivity}
-            onFestivityChange={setSelectedFestivity}
+            onFestivityChange={(festivity) => {
+              setSelectedFestivity(festivity);
+              onFestivityChange?.(festivity);
+            }}
           />
         </div>
 
@@ -401,6 +419,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
 
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden mb-16">
           <div className={`p-8 text-white ${
+            selectedFestivity === 'friendship' ? 'bg-gradient-to-r from-sky-600 via-teal-500 to-cyan-500' :
             selectedFestivity === 'valentine' ? 'bg-gradient-to-r from-red-500 to-pink-500' :
             selectedFestivity === 'mothers-day' ? 'bg-gradient-to-r from-pink-500 to-rose-500' :
             selectedFestivity === 'birthday' ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
@@ -410,6 +429,7 @@ export function LandingPage({ onSearchCard }: LandingPageProps) {
             'bg-gradient-to-r from-green-500 to-emerald-500'
           }`}>
             <h2 className="text-3xl font-bold mb-4">
+              {selectedFestivity === 'friendship' && t('festHeadline_friendship')}
               {selectedFestivity === 'valentine' && t('festHeadline_valentine')}
               {selectedFestivity === 'mothers-day' && t('festHeadline_mothers')}
               {selectedFestivity === 'birthday' && t('festHeadline_birthday')}

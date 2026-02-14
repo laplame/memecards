@@ -154,6 +154,7 @@ export async function createEmptyPage(
     storeName?: string;
     serverId?: string;
     pin?: string;
+    temporality?: number; // Años de validez
   }
 ): Promise<AudioPage> {
   const pages = await loadPages();
@@ -173,7 +174,10 @@ export async function createEmptyPage(
   const audioUrl = `${baseUrl}/api/audio/stream/placeholder.mp3`;
   const audioFilename = 'placeholder.mp3';
 
-  const expirationDate = new Date('2026-02-14T00:00:00');
+  // Calcular fecha de expiración basada en la temporalidad (por defecto 1 año)
+  const tempYears = options?.temporality || 1;
+  const expirationDate = new Date();
+  expirationDate.setFullYear(expirationDate.getFullYear() + tempYears);
 
   const title = options?.title || (options?.storeName && options?.serverId 
     ? `Tarjeta ${options.storeName} - ${options.serverId}`
