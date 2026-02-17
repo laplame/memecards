@@ -98,6 +98,21 @@ app.get('/health', (req, res) => {
   res.redirect('/api/health');
 });
 
+// Servir archivos JavaScript de templates
+app.get('/js/:filename', (req, res) => {
+  const { filename } = req.params;
+  const jsPath = path.join(__dirname, 'templates', 'js', filename);
+  
+  // Verificar que el archivo existe
+  if (!fs.existsSync(jsPath)) {
+    return res.status(404).send('File not found');
+  }
+  
+  // Servir el archivo con el tipo de contenido correcto
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.sendFile(jsPath);
+});
+
 // React app: servir build del frontend solo si no estamos en modo API-only (frontend en otro puerto)
 const apiOnly = process.env.API_ONLY === 'true' || process.env.API_ONLY === '1';
 if (!apiOnly) {
