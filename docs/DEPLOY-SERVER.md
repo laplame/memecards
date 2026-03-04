@@ -53,12 +53,15 @@ En local `http://localhost:3000/page/CODE` funciona porque la petición va direc
 
 **En el servidor:**
 
-1. **Comprobar qué responde el backend y qué nginx:**
+1. **Comprobar qué responde el backend y qué nginx** (en el servidor; si no tienes `verify-page-route.sh`, usa estos comandos):
    ```bash
    cd ~/projects/memecards
-   ./scripts/verify-page-route.sh 3G8PW2R9
+   # Backend directo (debe devolver 200 y HTML de la tarjeta)
+   curl -s -o /dev/null -w "Backend: HTTP %{http_code}\n" http://127.0.0.1:3000/page/3G8PW2R9
+   # Por dominio (debe ser 200; si ves el formulario en el navegador, nginx estaba mal)
+   curl -s -o /dev/null -w "HTTPS /page/: HTTP %{http_code}\n" https://tarjetas.shop/page/3G8PW2R9
    ```
-   Si dice "SPA (React)" para nginx, sigue los pasos siguientes.
+   O ejecuta el script si está en el repo: `./scripts/verify-page-route.sh 3G8PW2R9`. Si nginx devolvía la SPA, sigue los pasos siguientes.
 
 2. **Asegurar que la config activa es la del repo** (con `location /page/` → backend):
    ```bash
@@ -74,11 +77,19 @@ En local `http://localhost:3000/page/CODE` funciona porque la petición va direc
    sudo nginx -t && sudo systemctl reload nginx
    ```
 
-4. **Comprobar de nuevo:**
+4. **Comprobar que el archivo en el servidor tiene `location /page/`:**
    ```bash
-   ./scripts/verify-page-route.sh 3G8PW2R9
+   grep -n "page" /etc/nginx/sites-available/memecards
    ```
-   Y en el navegador: https://tarjetas.shop/page/3G8PW2R9 — debe verse la tarjeta con audio, no el formulario "Crea tu Tarjeta".
+   Debe aparecer `location ^~ /page/` o `location /page/`. Si no aparece, haz `git pull` en el servidor y vuelve a ejecutar `./scripts/nginx-update.sh`.
+
+5. **Comprobar que no hay otro sitio que capture tarjetas.shop en 443:**
+   ```bash
+   sudo grep -r "server_name.*tarjetas\|listen.*443" /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null
+   ```
+   Solo debería salir el archivo `memecards`. Si sale otro con `tarjetas.shop` y `443`, desactívalo.
+
+6. **Comprobar en el navegador:** https://tarjetas.shop/page/3G8PW2R9 — debe verse la tarjeta con audio y el modal de términos, no solo "Crea tu Tarjeta".
 
 ## 4. PM2
 
