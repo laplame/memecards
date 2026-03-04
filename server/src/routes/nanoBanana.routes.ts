@@ -103,7 +103,8 @@ router.post('/generate', async (req: Request, res: Response, next: NextFunction)
     const result = await generateImageWithNanoBanana(finalPrompt);
 
     if (!result.success || !result.imageUrl) {
-      throw new AppError(result.error || 'Error al generar imagen', 500);
+      const isQuota = result.error?.includes('Cuota') ?? false;
+      throw new AppError(result.error || 'Error al generar imagen', isQuota ? 429 : 500);
     }
 
     // Convertir data URL a buffer

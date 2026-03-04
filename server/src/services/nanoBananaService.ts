@@ -4,6 +4,31 @@
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent';
 
+const QUOTA_EXCEEDED_MESSAGE = 'Cuota de Gemini agotada. Prueba en unos minutos o revisa tu plan y facturación en https://ai.google.dev';
+
+/**
+ * Parsea la respuesta de error de Gemini y devuelve un mensaje corto para el usuario.
+ */
+function parseGeminiError(status: number, body: string): string {
+  if (status === 429) {
+    try {
+      const json = JSON.parse(body) as { error?: { message?: string } };
+      if (json?.error?.message?.toLowerCase().includes('quota')) {
+        return QUOTA_EXCEEDED_MESSAGE;
+      }
+    } catch {
+      // ignore
+    }
+    return QUOTA_EXCEEDED_MESSAGE;
+  }
+  try {
+    const json = JSON.parse(body) as { error?: { message?: string } };
+    return json?.error?.message || `Error en Gemini (${status})`;
+  } catch {
+    return `Error en Gemini API (${status})`;
+  }
+}
+
 /**
  * Obtiene la API key de Gemini (lazy loading para asegurar que .env esté cargado)
  */
@@ -69,37 +94,51 @@ export async function remixImageWithNanoBanana(
     ? `${context}. ${userText}. Remix esta imagen manteniendo el estilo y composición pero incorporando los elementos mencionados.`
     : `${userText}. Remix esta imagen manteniendo el estilo y composición pero incorporando los elementos mencionados.`;
 
-  try {
-    const response = await fetch(GEMINI_API_URL, {
+  const requestBody = {
+    contents: [{
+      parts: [
+        { inlineData: { data: imageBase64, mimeType } },
+        { text: prompt },
+      ],
+    }],
+    generationConfig: {
+      responseModalities: ['IMAGE'],
+      imageConfig: { aspectRatio: '4:3' },
+    },
+  };
+
+  const doFetch = () =>
+    fetch(GEMINI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-goog-api-key': GEMINI_API_KEY,
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              inlineData: {
-                data: imageBase64,
-                mimeType: mimeType,
-              }
-            },
-            { text: prompt }
-          ]
-        }],
-        generationConfig: {
-          responseModalities: ['IMAGE'],
-          imageConfig: {
-            aspectRatio: '4:3',
-          }
-        }
-      }),
+      body: JSON.stringify(requestBody),
     });
+
+  try {
+    let response = await doFetch();
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Error en Gemini API: ${response.status} - ${errorText}`);
+      if (response.status === 429) {
+        console.warn('Gemini 429 (cuota) en remix. Reintentando en 8s...');
+        await new Promise((r) => setTimeout(r, 8000));
+        response = await doFetch();
+        if (!response.ok) {
+          const retryText = await response.text();
+          return {
+            success: false,
+            error: parseGeminiError(response.status, retryText),
+          };
+        }
+      } else {
+        return {
+          success: false,
+          error: parseGeminiError(response.status, errorText),
+        };
+      }
     }
 
     interface GeminiCandidate {
@@ -174,31 +213,46 @@ export async function generateImageWithNanoBanana(
     throw new Error('nano_banana API key no está configurada en las variables de entorno');
   }
 
-  try {
-    const response = await fetch(GEMINI_API_URL, {
+  const requestBody = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseModalities: ['IMAGE'],
+      imageConfig: { aspectRatio: '4:3' },
+    },
+  };
+
+  const doFetch = () =>
+    fetch(GEMINI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-goog-api-key': GEMINI_API_KEY,
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt }
-          ]
-        }],
-        generationConfig: {
-          responseModalities: ['IMAGE'],
-          imageConfig: {
-            aspectRatio: '4:3',
-          }
-        }
-      }),
+      body: JSON.stringify(requestBody),
     });
+
+  try {
+    let response = await doFetch();
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Error en Gemini API: ${response.status} - ${errorText}`);
+      if (response.status === 429) {
+        console.warn('Gemini 429 (cuota). Reintentando en 8s...');
+        await new Promise((r) => setTimeout(r, 8000));
+        response = await doFetch();
+        if (!response.ok) {
+          const retryText = await response.text();
+          return {
+            success: false,
+            error: parseGeminiError(response.status, retryText),
+          };
+        }
+      } else {
+        return {
+          success: false,
+          error: parseGeminiError(response.status, errorText),
+        };
+      }
     }
 
     interface GeminiCandidate {
@@ -245,10 +299,8 @@ export async function generateImageWithNanoBanana(
     throw new Error('No se encontró imagen en la respuesta de Gemini API');
   } catch (error) {
     console.error('Error generando imagen con Nano Banana:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido al generar imagen',
-    };
+    const msg = error instanceof Error ? error.message : 'Error desconocido al generar imagen';
+    return { success: false, error: msg };
   }
 }
 
