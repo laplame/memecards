@@ -1,25 +1,29 @@
 # Nginx – Tarjetas.shop (MemeCards)
 
-Dominios: **tarjetas.shop**, **www.tarjetas.shop** y IP **200.234.228.73**.
+- **https://tarjetas.shop** y **https://www.tarjetas.shop** → HTTPS (puerto 443, certificados Certbot).
+- **http://tarjetas.shop** y **http://www.tarjetas.shop** → redirigen a HTTPS.
+- **http://200.234.228.73** → HTTP (sin certificado).
 
-- **`/api/`** y **`/page/`** → backend (127.0.0.1:3000)
-- **`/`** (SPA) → frontend (127.0.0.1:5173)
+El archivo `memecards.conf` incluye:
+- Bloque 80 para los dominios: redirección 301 a https.
+- Bloque 80 para la IP: proxy a la app.
+- Bloque 443: SSL con `/etc/letsencrypt/live/tarjetas.shop/` y proxy a la app.
 
-## Aplicar / actualizar en el servidor
+## Aplicar en el servidor
 
-Desde la raíz del proyecto (tras `git pull`):
+1. Certbot (si aún no tienes certificados):
 
-```bash
-./scripts/nginx-update.sh
-```
+   ```bash
+   sudo certbot --nginx -d tarjetas.shop -d www.tarjetas.shop
+   ```
 
-El script copia `nginx/memecards.conf`, desactiva sitios que usen el host antiguo de Clouding, activa memecards y recarga nginx.
+2. Copiar esta config (sobrescribe lo que certbot haya puesto en memecards):
 
-## HTTPS con Certbot
+   ```bash
+   ./scripts/nginx-update.sh
+   ```
 
-```bash
-sudo certbot --nginx -d tarjetas.shop -d www.tarjetas.shop
-```
+   Si certbot creó un archivo aparte (ej. `memecards-le-ssl.conf`), el script puede avisarte; desactívalo con `sudo rm -f /etc/nginx/sites-enabled/memecards-le-ssl.conf` y vuelve a ejecutar el script.
 
 ## Si ves 502
 

@@ -49,8 +49,13 @@ sudo cp -f "$CONF_SOURCE" "$SITES_AVAILABLE/memecards"
 sudo ln -sf "$SITES_AVAILABLE/memecards" "$SITES_ENABLED/memecards"
 
 echo "  Comprobando configuración..."
-if ! sudo nginx -t; then
-  echo "  Error en la configuración de nginx. No se ha recargado."
+if ! sudo nginx -t 2>&1; then
+  echo ""
+  echo "  Si falla por SSL: verifica que existan los certificados:"
+  echo "    sudo ls -la /etc/letsencrypt/live/tarjetas.shop/"
+  echo "  Si certbot creó otro archivo (ej. memecards-le-ssl.conf), desactívalo:"
+  echo "    sudo rm -f $SITES_ENABLED/memecards-le-ssl.conf"
+  echo "  Luego ejecuta de nuevo este script."
   exit 1
 fi
 
