@@ -14,6 +14,22 @@ Para usar en el servidor de producción los mismos datos que tienes en local (p�
 
 El backend en producción usa `PAGES_DIR=./server/pages-data`, `IMAGES_DIR=./server/images`, etc. (definidos en `ecosystem.config.cjs`), así que la estructura debe ser la misma que en local.
 
+## Script solo imágenes (feed)
+
+Para subir únicamente las imágenes locales y que el feed se vea bien:
+
+```bash
+SERVER=cto@200.234.228.73 ./scripts/sync-images-to-production.sh
+```
+
+Opcional: reiniciar el backend tras subir:
+
+```bash
+SYNC_RESTART=1 SERVER=cto@200.234.228.73 ./scripts/sync-images-to-production.sh
+```
+
+Puedes definir `SERVER` y `REMOTE` (p. ej. en tu `.env` o export) para no escribirlos cada vez.
+
 ## Opción 1: rsync desde tu máquina
 
 Desde tu **ordenador** (en la carpeta del proyecto):

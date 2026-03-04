@@ -92,9 +92,15 @@ export function Dashboard() {
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
 
-  /** URL pública de una página (siempre el dominio actual, no localhost del API) */
+  /** URL pública de una página (dominio actual en prod; en dev apunta al backend para ver el template) */
   const getPagePublicUrl = (code: string) =>
     typeof window !== 'undefined' ? `${window.location.origin}/page/${code}` : '';
+
+  /** URL para abrir la página de la tarjeta: en dev va al backend (3000) para que se sirva audioPage; en prod es relativa (nginx hace proxy) */
+  const getPageOpenUrl = (code: string) =>
+    import.meta.env.DEV
+      ? `${backendUrl || 'http://localhost:3000'}/page/${code}`
+      : `/page/${code}`;
 
   useEffect(() => {
     if (isUnlocked) {
@@ -850,7 +856,7 @@ export function Dashboard() {
                   {/* Actions */}
                   <div className="space-y-2">
                     <a
-                      href={`/page/${page.code}`}
+                      href={getPageOpenUrl(page.code)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"

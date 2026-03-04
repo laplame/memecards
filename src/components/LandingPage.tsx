@@ -512,14 +512,17 @@ export function LandingPage({ onSearchCard, onFestivityChange }: LandingPageProp
                 <button
                   onClick={() => {
                     const apiBase = import.meta.env.VITE_BACKEND_URL ?? '';
+                    const pageUrl = import.meta.env.DEV
+                      ? `${apiBase || 'http://localhost:3000'}/page/DEMO1234`
+                      : '/page/DEMO1234';
                     // Inicializar la demo si no existe
-                    fetch(`${apiBase}/api/pages/demo/init`)
+                    fetch(`${apiBase || 'http://localhost:3000'}/api/pages/demo/init`)
                       .then(() => {
-                        window.location.href = '/page/DEMO1234';
+                        window.location.href = pageUrl;
                       })
                       .catch((error) => {
                         console.error('Error al inicializar demo:', error);
-                        window.location.href = '/page/DEMO1234';
+                        window.location.href = pageUrl;
                       });
                   }}
                   className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-4 px-8 rounded-full text-xl hover:from-purple-600 hover:to-indigo-600 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
