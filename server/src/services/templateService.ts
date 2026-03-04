@@ -15,16 +15,23 @@ export async function renderAudioPage(page: AudioPage): Promise<string> {
   try {
     let template = await fs.readFile(templatePath, 'utf-8');
     
-    const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+    // En producción no usar nunca localhost (evita Mixed Content)
+    const defaultBase =
+      process.env.NODE_ENV === 'production'
+        ? 'https://www.tarjetas.shop'
+        : 'http://localhost:3000';
+    const baseUrl = (process.env.BASE_URL || defaultBase).replace(/\/$/, '');
     const isPersonalized = Boolean(page.isPersonalized);
     const playCount = page.playCount || 0;
     const maxPlays = page.maxPlays || 5;
     const expirationDate = page.expirationDate 
       ? new Date(page.expirationDate).toISOString() 
       : '';
-    // En producción, URLs guardadas con localhost deben usar BASE_URL (evita Mixed Content)
-    const audioUrl = (page.audioUrl || '').replace(/^https?:\/\/[^/]+/, baseUrl);
-    const imageUrl = (page.imageUrl || '').replace(/^https?:\/\/[^/]+/, baseUrl);
+    // Sustituir origen localhost/127.0.0.1 por baseUrl en todas las URLs
+    const normalizeUrl = (url: string) =>
+      (url || '').replace(/^https?:\/\/[^/]+/, baseUrl);
+    const audioUrl = normalizeUrl(page.audioUrl || '');
+    const imageUrl = normalizeUrl(page.imageUrl || '');
 
     // Reemplazar placeholders
     template = template.replace(/{{TITLE}}/g, escapeHtml(page.title || 'Audio Player'));
