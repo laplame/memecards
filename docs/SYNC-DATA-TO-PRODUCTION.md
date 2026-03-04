@@ -64,7 +64,7 @@ En el servidor, el `.env` (o las variables que use PM2) deben tener al menos:
 
 - **MONGODB_ATLAS** (o MONGODB_URI) – mismo que en local si quieres feed/votos/comentarios.
 - **nano_banana** (o NANO_BANANA) – API key de Gemini para generación de imágenes.
-- **BASE_URL** – URL pública, p. ej. `http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host`
+- **BASE_URL** – URL pública, p. ej. `https://tarjetas.shop`
 - Opcional: UNSPLASH_ACCESS_KEY, etc.
 
 Puedes copiar el `.env` local (sin subirlo a git) y ajustar `BASE_URL`:
@@ -88,5 +88,5 @@ pm2 restart memecards-backend
 
 Comprueba que las tarjetas y medios cargan:
 
-- `http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host/feed`
+- `https://tarjetas.shop/feed`
 - Abrir una tarjeta por código

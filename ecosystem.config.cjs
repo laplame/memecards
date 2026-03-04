@@ -1,7 +1,7 @@
 /**
  * PM2: frontend (5173) + backend (3000, API only).
  * Uso: pm2 start ecosystem.config.cjs
- * Base URL: http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host
+ * Base URL: https://tarjetas.shop
  */
 
 const path = require('path');

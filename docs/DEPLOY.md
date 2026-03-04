@@ -68,7 +68,7 @@ Cuando quieras HTTPS:
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host
+sudo certbot --nginx -d tarjetas.shop -d www.tarjetas.shop
 ```
 
 Certbot modificará la config de nginx para servir HTTPS. Luego:

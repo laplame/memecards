@@ -2,7 +2,7 @@
 #
 # MemeCards: frontend (5173) + backend (3000).
 # Libera los puertos, hace build y arranca ambos con PM2.
-# Base URL: http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host
+# Base URL: https://tarjetas.shop
 #
 # Uso:
 #   ./scripts/start-servers.sh           # producción: liberar puertos, build, PM2
@@ -17,7 +17,7 @@ cd "$ROOT_DIR"
 
 export BACKEND_PORT="${BACKEND_PORT:-3000}"
 export FRONTEND_PORT="${FRONTEND_PORT:-5173}"
-export PUBLIC_HOST="${PUBLIC_HOST:-efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host}"
+export PUBLIC_HOST="${PUBLIC_HOST:-tarjetas.shop}"
 export BASE_URL="${BASE_URL:-http://${PUBLIC_HOST}}"
 
 MODE="${1:-prod}"

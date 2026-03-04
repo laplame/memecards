@@ -1,6 +1,6 @@
 # Deploy MemeCards (frontend 5173 + backend 3000)
 
-Base URL: **http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host/**
+Base URL: **https://tarjetas.shop**
 
 ## Arquitectura
 
@@ -43,8 +43,8 @@ curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/api/health   # 200
 curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5173/             # 200
 
 # Por el dominio
-curl -s -o /dev/null -w "%{http_code}" http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host/api/health
-curl -s -o /dev/null -w "%{http_code}" http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host/
+curl -s -o /dev/null -w "%{http_code}" http://tarjetas.shop/api/health
+curl -s -o /dev/null -w "%{http_code}" http://tarjetas.shop/
 ```
 
 ## 4. PM2

@@ -120,6 +120,6 @@ fi
 
 echo ""
 echo "=== Despliegue listo ==="
-echo "  URL: http://efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host"
+echo "  URL: https://tarjetas.shop"
 echo "  Certbot (HTTPS): hacerlo manualmente cuando quieras."
 echo "  git push: hacerlo desde tu máquina cuando quieras subir cambios."
