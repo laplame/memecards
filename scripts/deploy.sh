@@ -95,7 +95,7 @@ export PORT=3000
 export API_ONLY=true
 
 if command -v pm2 &>/dev/null; then
-  for name in memecards-backend memecards-frontend memecards-server; do
+  for name in backend frontend memecards-backend memecards-frontend memecards-server; do
     pm2 delete "$name" 2>/dev/null || true
   done
   for port in 3000 5173; do

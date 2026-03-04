@@ -33,7 +33,13 @@ Libera los puertos 3000 y 5173, hace build y arranca `memecards-backend` y `meme
 
 ## Si ves 502 Bad Gateway
 
-1. Comprueba que backend y frontend estén en marcha: `pm2 status` (deben aparecer `memecards-backend` y `memecards-frontend` en estado **online**).
-2. Comprueba que escuchan en los puertos: `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/api/health` y `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5173/` (deben devolver 200).
-3. Si no están corriendo: `cd ~/projects/memecards && ./scripts/deploy.sh` o `./scripts/start-servers.sh`.
-4. Revisa logs: `sudo tail -50 /var/log/nginx/memecards-error.log` y `pm2 logs`.
+1. **Deja solo las apps de MemeCards.** Si en `pm2 status` ves 4 apps (backend, frontend, memecards-backend, memecards-frontend), las antiguas "backend" y "frontend" pueden estar ocupando los puertos. Elimínalas y reinicia:
+   ```bash
+   pm2 delete backend frontend
+   pm2 restart memecards-backend memecards-frontend
+   pm2 save
+   ```
+2. Comprueba que solo estén en marcha `memecards-backend` y `memecards-frontend`: `pm2 status`.
+3. Comprueba que respondan en los puertos: `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/api/health` y `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5173/` (deben devolver 200).
+4. Si no están corriendo: `cd ~/projects/memecards && ./scripts/deploy.sh` o `./scripts/start-servers.sh`.
+5. Revisa logs: `sudo tail -50 /var/log/nginx/memecards-error.log` y `pm2 logs`.

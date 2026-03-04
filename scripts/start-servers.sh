@@ -38,7 +38,7 @@ kill_port() {
 # Detiene y elimina apps MemeCards en PM2
 pm2_clean() {
   if command -v pm2 &>/dev/null; then
-    for name in memecards-backend memecards-frontend memecards-server; do
+    for name in backend frontend memecards-backend memecards-frontend memecards-server; do
       pm2 stop "$name" 2>/dev/null || true
       pm2 delete "$name" 2>/dev/null || true
     done
