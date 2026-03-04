@@ -15,6 +15,12 @@ set -e
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+# Para que pm2 se encuentre si se instaló con npm -g (usuario)
+if command -v npm &>/dev/null; then
+  NPM_PREFIX="$(npm config get prefix 2>/dev/null)"
+  [ -n "$NPM_PREFIX" ] && export PATH="$NPM_PREFIX/bin:$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
+fi
+
 INSTALL_DEPS=false
 for arg in "$@"; do
   [ "$arg" = "--install" ] && INSTALL_DEPS=true
@@ -37,13 +43,27 @@ if [ "$INSTALL_DEPS" = true ]; then
   fi
 
   if ! command -v node &>/dev/null; then
-    echo "  Node.js no encontrado. Instálalo manualmente (nvm, NodeSource o apt) y vuelve a ejecutar."
+    echo "  Node.js no encontrado. Instálalo antes (nvm, NodeSource o apt). Ejemplo con NodeSource:"
+    echo "    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs"
+    exit 1
+  fi
+
+  if ! command -v npm &>/dev/null; then
+    echo "  npm no encontrado (Node.js suele traerlo). Instala Node.js y vuelve a ejecutar."
     exit 1
   fi
 
   if ! command -v pm2 &>/dev/null; then
-    echo "  Instalando PM2 globalmente..."
-    sudo npm install -g pm2
+    echo "  Instalando PM2 (con npm del usuario, sin sudo)..."
+    npm install -g pm2
+    # Añadir al PATH por si npm global está en ~/.local/bin o similar
+    export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$(npm config get prefix 2>/dev/null)/bin:$PATH"
+    if ! command -v pm2 &>/dev/null; then
+      echo "  PM2 instalado pero no está en PATH. Añade a tu .bashrc o ejecuta:"
+      echo "    export PATH=\"\$HOME/.local/bin:\$(npm config get prefix)/bin:\$PATH\""
+      echo "  Luego ejecuta de nuevo: ./scripts/deploy.sh"
+      exit 1
+    fi
   else
     echo "  PM2 ya instalado."
   fi

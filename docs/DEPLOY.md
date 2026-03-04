@@ -20,6 +20,14 @@ git push
 
 ## 3. En el servidor: primer despliegue (instalar PM2 y nginx)
 
+**Requisito:** Node.js y npm instalados en el servidor (el script usa el npm del usuario, no `sudo npm`). Si no los tienes:
+
+```bash
+# Ejemplo con NodeSource (Node 20)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
 Conéctate al servidor y clona o entra en el proyecto:
 
 ```bash
@@ -28,7 +36,7 @@ git clone <url-del-repo> ~/projects/memecards
 cd ~/projects/memecards
 ```
 
-Instalar dependencias del sistema, build y arranque:
+Instalar dependencias del sistema (nginx + PM2), build y arranque:
 
 ```bash
 chmod +x scripts/deploy.sh
