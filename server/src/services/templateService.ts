@@ -15,18 +15,21 @@ export async function renderAudioPage(page: AudioPage): Promise<string> {
   try {
     let template = await fs.readFile(templatePath, 'utf-8');
     
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
     const isPersonalized = Boolean(page.isPersonalized);
     const playCount = page.playCount || 0;
     const maxPlays = page.maxPlays || 5;
     const expirationDate = page.expirationDate 
       ? new Date(page.expirationDate).toISOString() 
       : '';
-    
+    // En producción, URLs guardadas con localhost deben usar BASE_URL (evita Mixed Content)
+    const audioUrl = (page.audioUrl || '').replace(/^https?:\/\/[^/]+/, baseUrl);
+    const imageUrl = (page.imageUrl || '').replace(/^https?:\/\/[^/]+/, baseUrl);
+
     // Reemplazar placeholders
     template = template.replace(/{{TITLE}}/g, escapeHtml(page.title || 'Audio Player'));
     template = template.replace(/{{DESCRIPTION}}/g, escapeHtml(page.description || 'Reproduce el audio'));
-    template = template.replace(/{{AUDIO_URL}}/g, escapeHtml(page.audioUrl));
+    template = template.replace(/{{AUDIO_URL}}/g, escapeHtml(audioUrl));
     template = template.replace(/{{CODE}}/g, escapeHtml(page.code));
     template = template.replace(/{{BASE_URL}}/g, escapeHtml(baseUrl));
     template = template.replace(/{{IS_PERSONALIZED}}/g, String(isPersonalized));
@@ -36,14 +39,13 @@ export async function renderAudioPage(page: AudioPage): Promise<string> {
     template = template.replace(/{{SENDER_NAME}}/g, escapeHtml(page.senderName || ''));
     template = template.replace(/{{RECIPIENT_NAME}}/g, escapeHtml(page.recipientName || ''));
     template = template.replace(/{{WRITTEN_MESSAGE}}/g, escapeHtml(page.writtenMessage || ''));
-    const imageUrl = page.imageUrl || '';
-    template = template.replace(/{{IMAGE_URL}}/g, escapeHtml(imageUrl));
     const videoUrl = page.videoUrl || '';
     template = template.replace(/{{VIDEO_URL}}/g, escapeHtml(videoUrl));
     template = template.replace(/{{HAS_PIN}}/g, String(page.hasPin || false));
     template = template.replace(/{{PIN}}/g, escapeHtml(page.pin || ''));
     template = template.replace(/{{USE_IMAGE_AS_WALLPAPER}}/g, String(page.useImageAsWallpaper || false));
     template = template.replace(/{{IS_PRESERVED}}/g, String(Boolean(page.isTest)));
+    template = template.replace(/{{IMAGE_URL}}/g, escapeHtml(imageUrl));
     
     // Agregar campos personalizados para JavaScript
     template = template.replace(/{{JS_TITLE}}/g, escapeHtml(page.title || ''));
