@@ -21,6 +21,7 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
         API_ONLY: 'true',
+        BASE_URL: 'https://www.tarjetas.shop',
         PAGES_DIR: './server/pages-data',
         IMAGES_DIR: './server/images',
         UPLOAD_DIR: './server/uploads',

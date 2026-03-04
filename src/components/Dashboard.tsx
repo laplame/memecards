@@ -92,6 +92,10 @@ export function Dashboard() {
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL ?? '';
 
+  /** URL pública de una página (siempre el dominio actual, no localhost del API) */
+  const getPagePublicUrl = (code: string) =>
+    typeof window !== 'undefined' ? `${window.location.origin}/page/${code}` : '';
+
   useEffect(() => {
     if (isUnlocked) {
       fetchPages();
@@ -106,9 +110,10 @@ export function Dashboard() {
   }, [isUnlocked, activeTab]);
 
   useEffect(() => {
-    // Generar QR codes para todas las páginas
+    // Generar QR codes con URL del dominio actual (www.tarjetas.shop, no localhost)
     pages.forEach((page) => {
-      generateQRCode(page.code, page.pageUrl);
+      const url = getPagePublicUrl(page.code);
+      if (url) generateQRCode(page.code, url);
     });
   }, [pages]);
 
@@ -845,7 +850,7 @@ export function Dashboard() {
                   {/* Actions */}
                   <div className="space-y-2">
                     <a
-                      href={page.pageUrl}
+                      href={getPagePublicUrl(page.code) || `/page/${page.code}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
@@ -856,7 +861,7 @@ export function Dashboard() {
 
                     <div className="grid grid-cols-3 gap-2">
                       <button
-                        onClick={() => copyToClipboard(page.pageUrl, page.code)}
+                        onClick={() => copyToClipboard(getPagePublicUrl(page.code) || `/page/${page.code}`, page.code)}
                         className="flex items-center justify-center space-x-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-2 rounded-lg transition-colors text-xs"
                       >
                         {copiedCode === page.code ? (
