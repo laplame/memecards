@@ -9,8 +9,11 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
+      'tarjetas.shop',
+      '.tarjetas.shop',
       'efef79cc-0938-42cc-8a5a-43020deccf0c.clouding.host',
-      '.clouding.host', // cualquier subdominio de Clouding
+      '.clouding.host',
+      '200.234.228.73',
     ],
     // En desarrollo, /api y /page van al backend (puerto 3000)
     proxy: {
